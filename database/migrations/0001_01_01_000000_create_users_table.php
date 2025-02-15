@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Role;
+use App\Models\UserInfo;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,18 +15,17 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('username');
+            $table->string('username')->unique();
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('phone');
-            $table->timestamp('dob');
-            $table->string('address');
+            $table->string('phone')->nullable();
+            $table->dateTime('dob')->nullable();
+            $table->string('address')->nullable();
             $table->string('img_url')->nullable();
-            $table->integer('role_id');
-            $table->integer('user_info_id');
-            $table->integer('is_available')->default(1);
-            $table->rememberToken();
+            $table->foreignIdFor(Role::class);
+            $table->foreignIdFor(UserInfo::class);
+            $table->boolean('is_available')->default(true);
+
             $table->timestamps();
         });
 

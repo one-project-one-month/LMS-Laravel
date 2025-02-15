@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Category;
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,18 +15,18 @@ return new class extends Migration
     {
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
-            $table->integer('lesson_id');
-            $table->integer('user_id');
-            $table->integer('category_id');
+            // $table->integer('lesson_id'); // no need
+            $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Category::class)->constrained()->cascadeOnUpdate();
             $table->string('name');
-            $table->string('thumbnail')->nullable();
+            $table->string('thumbnail');
             $table->longText('description')->nullable();
-            $table->integer('is_available')->default(1);
-            $table->string('type');
-            $table->string('level');
-            $table->integer('duration');
-            $table->integer('original_price');
-            $table->integer('current_price');
+            $table->boolean('is_available')->default(false);
+            $table->enum('type' , ["free","paid"]);
+            $table->enum('level',["beginner" , "intermediate" ,"advance"]);
+            $table->string('duration');
+            $table->string('original_price'); // calculation work at frontend
+            $table->string('current_price');
             $table->timestamps();
         });
     }
