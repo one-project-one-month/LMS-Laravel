@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignIdFor(Course::class)->constrained()->cascadeOnUpdate()->restrictOnDelete();
             $table->string('title');
             $table->string('video_url')->nullable();
-            $table->text('details')->nullable();
+            $table->text('lesson_detail')->nullable();;
             $table->boolean('is_available')->default(true);
             $table->timestamps();
         });
