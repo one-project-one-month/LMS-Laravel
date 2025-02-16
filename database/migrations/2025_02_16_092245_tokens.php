@@ -16,8 +16,8 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnUpdate();
             $table->string("token");
-            $table->timestamp("started_date");
-            $table->timestamp("expired_date");
+            $table->timestamp("started_date")->useCurrent();
+            $table->timestamp("expired_date")->nullable();
             $table->timestamps();
         });
     }
