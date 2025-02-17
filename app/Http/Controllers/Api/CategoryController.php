@@ -38,7 +38,7 @@ class CategoryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show()
     {
         //
     }
@@ -46,16 +46,30 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request,Category $category)
     {
+        $category = Category::find($category->id);
 
+        if(!$category){
+            return response()->json([
+            'message' => 'Category not found',
+            ], 404);
+        }
+        $category->update([
+            'name' => $request->name,
+        ]);
+
+        return response()->json([
+            'message' => 'Category updated successfully',
+            'data' => $category,
+        ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy()
     {
-        //
+
     }
 }
