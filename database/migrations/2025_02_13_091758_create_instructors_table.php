@@ -15,10 +15,8 @@ return new class extends Migration
         Schema::create('instructors', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
-
             $table->string("nrc");
             $table->string("edu_background");
-
             $table->timestamps();
         });
     }
