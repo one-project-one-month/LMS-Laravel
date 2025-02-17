@@ -30,22 +30,23 @@ class InstructorController extends Controller
                 'password' => $request->password,
             ]);
 
+
             $instructor = Instructor::create([
                 'user_id' => $user->id,
                 'nrc' => $request->nrc,
                 'edu_background' => $request->edu_background,
             ]);
 
+
             $token = JWTAuth::fromUser($user);
 
             return response()->json([
                 'message' => 'Student Registered SuccessFully',
                 'data' => [
-                    'instructor' => array_merge($user->toArray(), $instructor->toArray()),
+                    // 'instructor' => array_merge($user->toArray(), $instructor->toArray()),
                     'token' => $token
                 ]
             ], 201);
-
         } catch (\Exception $e) {
             return $e->getMessage();
         }

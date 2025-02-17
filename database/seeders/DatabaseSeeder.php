@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use App\Models\Role;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -21,8 +22,10 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
-        Role::factory()->create([
-            'role' => 'student'
-        ]);
+        // Role::factory()->create([
+        //     'role' => 'student'
+        // ]);
+
+        $this->call(CategorySeeder::class);
     }
 }
