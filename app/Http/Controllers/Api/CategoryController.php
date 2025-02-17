@@ -38,9 +38,18 @@ class CategoryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Category $category)
     {
-        //
+        $category = Category::find($id);
+        if (!$category) {
+            return response()->json([
+                'message' => 'Category not found']
+                , 404);
+        }
+
+        return response()->json(
+            ['data' => $category]
+             ,200);
     }
 
     /**
@@ -56,6 +65,17 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        //
-    }
+        $category = Category::find($id);
+        if (!$category) {
+            return response()->json([
+                'message' => 'Category not found']
+                , 404);
+        }
+
+        $category->delete();
+
+        return response()->json(
+            ['message' => 'Category deleted successfully']
+            , 200);
+        }
 }
