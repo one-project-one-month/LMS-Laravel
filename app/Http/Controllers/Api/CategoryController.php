@@ -58,7 +58,7 @@ class CategoryController extends Controller
      */
     public function update(Request $request,Category $category)
     {
-        $category = Category::find($category->id);
+        $category = Category::find($request->id);
 
         if(!$category){
             return response()->json([
@@ -78,7 +78,7 @@ class CategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Category $category, Request $request)
+    public function destroy(Request $request)
     {
         $category = Category::find($request->id);
         if (!$category) {
@@ -92,5 +92,5 @@ class CategoryController extends Controller
         return response()->json(
             ['message' => 'Category deleted successfully']
             , 200);
-        }
+    }
 }
