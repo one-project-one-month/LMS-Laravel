@@ -2,9 +2,9 @@
 
 use App\Http\Controllers\Api\Auth\InstructorController;
 use App\Http\Controllers\Api\Auth\StudentController;
+use App\Http\Controllers\Api\CategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\CategoryController;
 
 
 Route::get('/user', function (Request $request) {
@@ -13,6 +13,7 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/student/register', [StudentController::class, 'store']);
 Route::post('/instructor/register', [InstructorController::class, 'store']);
+
 
 
 Route::get('/categories', [CategoryController::class, 'index']);
