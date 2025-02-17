@@ -24,9 +24,6 @@ class CourseController extends Controller
     public function store(CourseRequest $courseRequest)
     {
 
-
-
-
         $validatedRequest = $courseRequest->validated();
 
         $courses = Course::create($validatedRequest);
@@ -41,22 +38,13 @@ class CourseController extends Controller
     }
     public function update(CourseRequest $courseRequest,  Course $course)
     {
-
-
-
         $course->update($courseRequest->validated());
 
-
-
-
-
         return response()->json([
-
             "message" => " update success",
             "data" => [
                 "courses" => $course
             ]
-
         ]);
     }
     public function destroy(Course $course)
