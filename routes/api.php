@@ -12,7 +12,9 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/student/register', [StudentController::class, 'store']);
 Route::post('/instructor/register', [InstructorController::class, 'store']);
+
+// courses api
 Route::get("/courses", [CourseController::class, "index"]);
 Route::post("/courses", [CourseController::class, "store"]);
-Route::put("/courses/{course}", [CourseController::class, "update"]);
-Route::delete("/courses/{course}", [CourseController::class, "destroy"]);
+Route::put("/courses/{id}", [CourseController::class, "update"]);
+Route::delete("/courses/{id}", [CourseController::class, "destroy"]);

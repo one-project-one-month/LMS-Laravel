@@ -31,9 +31,8 @@ class CourseRequest extends FormRequest
             "duration" => ["required", "string"],
             "original_price" => ["required", "string"],
             "current_price" => ["required", "string"],
-            // "instructor_id" => ["require"],
+            "instructor_id" => ["required","exists:instructors,id"],
             "category_id" => ["required"]
-
         ];
     }
 

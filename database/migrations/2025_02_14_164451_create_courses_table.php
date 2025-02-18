@@ -16,8 +16,6 @@ return new class extends Migration
     {
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
-            // $table->foreignIdFor(Instructor::class)->constrained()->cascadeOnDelete();
-            // $table->foreignIdFor(Instructor::class);
             $table->string('course_name');
             $table->string('thumbnail');
             $table->boolean('is_available')->default(false);
@@ -27,8 +25,8 @@ return new class extends Migration
             $table->string('duration');
             $table->string('original_price'); // calculation work at frontend
             $table->string('current_price');
-            $table->foreignIdFor(Category::class);
-            // $table->foreignIdFor(Category::class)->constrained()->cascadeOnUpdate();
+            $table->foreignIdFor(Category::class)->constrained()->cascadeOnUpdate();
+            $table->foreignIdFor(Instructor::class)->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }
