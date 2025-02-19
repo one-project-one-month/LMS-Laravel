@@ -1,27 +1,20 @@
 <?php
 
-namespace App\Http\Controllers\Api\Auth;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\InstructorRegisterRequest;
 use App\Models\Instructor;
 use App\Models\User;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
-class InstructorController extends Controller
+class InstructorRegisterController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Handle the incoming request.
      */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function __invoke(InstructorRegisterRequest $request): JsonResponse
     {
         try {
             $user = User::create([
@@ -39,39 +32,17 @@ class InstructorController extends Controller
             $token = JWTAuth::fromUser($user);
 
             return response()->json([
-                'message' => 'Student Registered SuccessFully',
+                'message' => 'Instructor registered successfully',
                 'data' => [
                     'instructor' => array_merge($user->toArray(), $instructor->toArray()),
-                    'token' => $token
+                    'token' => $token,
                 ]
             ], 201);
-
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return response()->json([
+                'message' => 'Registration failed',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }
