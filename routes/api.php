@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\Api\Auth\InstructorController;
-use App\Http\Controllers\Api\Auth\StudentController;
-use App\Http\Controllers\Api\CourseController;
-use App\Http\Controllers\Api\V1\StudentAuthController;
+use App\Http\Controllers\Api\V1\Auth\InstructorAuthController;
+use App\Http\Controllers\Api\V1\Auth\StudentAuthController;
+use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\CourseController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

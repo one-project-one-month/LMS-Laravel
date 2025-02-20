@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CourseRequest;
@@ -13,7 +13,7 @@ class CourseController extends Controller
     /**
      *  Get all courses
      *  get - /api/courses
-    */
+     */
     public function index()
     {
         $courses = Course::all();
@@ -24,7 +24,7 @@ class CourseController extends Controller
                 "courses" => $courses
             ],
             "status" => 200
-        ],200);
+        ], 200);
     }
 
     /**
@@ -44,7 +44,7 @@ class CourseController extends Controller
                 "course" => $course
             ],
             "status" => 201
-        ],201);
+        ], 201);
     }
 
     /**
@@ -73,7 +73,7 @@ class CourseController extends Controller
                 "courses" => $course
             ],
             "status" => 200
-        ],200);
+        ], 200);
     }
 
     /**
