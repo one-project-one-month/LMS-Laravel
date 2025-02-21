@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StudentRegisterRequest extends FormRequest
 {
@@ -22,26 +23,23 @@ class StudentRegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'username' => 'required|string',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8'
+            'username' => ['required', 'string'],
+            'email' => ['required', 'email', Rule::unique('users', 'email')],
+            'password' => ['required', 'string', 'min:8'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'username.required' => 'The username field is required.',
-            'username.string' => 'The username must be a valid string.',
-            'username.max' => 'The username must not exceed 255 characters.',
-
-            'email.required' => 'The email field is required.',
+            'username.required' => 'Username is required.',
+            'username.string' => 'Username must be a valid string.',
+            'email.required' => 'Email is required.',
             'email.email' => 'Please provide a valid email address.',
             'email.unique' => 'This email is already taken.',
-
-            'password.required' => 'The password field is required.',
-            'password.string' => 'The password must be a valid string.',
-            'password.min' => 'The password must be at least 8 characters long.',
+            'password.required' => 'Password is required.',
+            'password.string' => 'Password must be a valid string.',
+            'password.min' => 'Password must be at least 8 characters long.',
         ];
     }
 }
