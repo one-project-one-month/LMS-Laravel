@@ -12,4 +12,9 @@ class Course extends Model
     {
         return $this->belongsTo(Instructor::class);
     }
+
+    public function lessons()
+    {
+        return $this->hasMany(Lesson::class);
+    }
 }
