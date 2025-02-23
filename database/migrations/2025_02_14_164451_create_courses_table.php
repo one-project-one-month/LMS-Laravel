@@ -17,10 +17,10 @@ return new class extends Migration
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
             $table->string('course_name');
-            $table->string('thumbnail');
+            $table->string('thumbnail')->nullable();
             $table->boolean('is_available')->default(false);
-            $table->enum('type', ["free", "paid"]);
-            $table->enum('level', ["beginner", "intermediate", "advance"]);
+            $table->enum('type', ["free", "paid"])->default("free");
+            $table->enum('level', ["beginner", "intermediate", "advance"])->default("beginner");
             $table->longText('description')->nullable();
             $table->string('duration');
             $table->string('original_price'); // calculation work at frontend
