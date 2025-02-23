@@ -5,8 +5,12 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CourseRequest;
 use App\Models\Course;
-use GuzzleHttp\Psr7\Message;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class CourseController extends Controller
 {
@@ -34,9 +38,19 @@ class CourseController extends Controller
      */
     public function store(CourseRequest $courseRequest)
     {
-        $validatedRequest = $courseRequest->validated();
+        $data = Arr::except($courseRequest->validated(), ["thumbnail"]);
+        $image = Arr::only($courseRequest->validated(), ['thumbnail']);
+        $user = JWTAuth::parseToken()->authenticate();
+        $user->instructor();
 
-        $course = Course::create($validatedRequest);
+        // Get the uploaded file from the 'thumbnail' key
+        $file = $image['thumbnail'];
+        $path = $file->storeAs('thumbnails', time() . "$" . $user->id  .  Str::snake($data["course_name"])  . "." . $file->getClientOriginalExtension(), 'public');
+        // $imageUrl = asset('storage/' . $path);
+        $imageUrl = url(Storage::url($path));
+        // $data["thumbnail"] = $imageUrl;
+
+        $course = Course::create(array_merge($data, ["thumbnail" => $imageUrl]));
 
         return response()->json([
             "message" => "Course created successfully.",
