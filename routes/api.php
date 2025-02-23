@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\Auth\StudentAuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CourseController;
 use App\Http\Controllers\Api\V1\EnrollmentController;
+use App\Http\Controllers\Api\V1\LessonController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -37,4 +38,14 @@ Route::put('/categories/{id}', [CategoryController::class, 'update']);
 Route::patch('/categories/{id}', [CategoryController::class, 'update']);
 Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
+
 Route::post("/enroll/{course}", [EnrollmentController::class, "enroll"])->middleware('jwt.auth');
+
+// lesson api
+Route::get('/lessons', [LessonController::class, 'index']);
+Route::get('/lessons/{id}', [LessonController::class, 'show']);
+Route::post('/lessons', [LessonController::class, 'store']);
+Route::put('/lessons/{id}', [LessonController::class, 'update']);
+Route::delete('/lessons/{id}', [LessonController::class, 'destroy']);
+Route::post('/lessons/uploadUrl', [LessonController::class, 'uploadUrl']);
+
