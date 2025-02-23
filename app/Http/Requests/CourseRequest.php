@@ -24,21 +24,22 @@ class CourseRequest extends FormRequest
     {
 
         return [
-            "course_name" => ["required", "min:5", "max:225"],
+            
+            "course_name" => ["sometimes", "required", "min:5", "max:225"],
             'thumbnail' => [
-                'required',
+                "sometimes",
+                "required",
                 'file',
                 'mimes:jpg,jpeg,png',
                 // 'max:2048',
             ],
-            "type" => ["required", Rule::in(["free", "paid"])],
-            "level" => ["required", Rule::in(["beginner", "intermediate", "advance"])],
+            "type" => ["sometimes", "required", Rule::in(["free", "paid"])],
+            "level" => ["sometimes", "required", Rule::in(["beginner", "intermediate", "advance"])],
             "description" => ["nullable", "string"],
-            "duration" => ["required", "string"],
-            "original_price" => ["required", "string"],
-            "current_price" => ["required", "string"],
-            // "instructor_id" => ["required", "exists:instructors,id"],
-            "category_id" => ["required"]
+            "duration" => ["sometimes", "required", "string"],
+            "original_price" => ["sometimes", "required", "string"],
+            "current_price" => ["sometimes", "required", "string"],
+            "category_id" => ["sometimes", "required"]
         ];
     }
 

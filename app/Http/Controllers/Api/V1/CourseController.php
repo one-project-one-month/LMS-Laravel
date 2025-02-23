@@ -41,7 +41,7 @@ class CourseController extends Controller
         $data = Arr::except($courseRequest->validated(), ["thumbnail"]);
         $image = Arr::only($courseRequest->validated(), ['thumbnail']);
         $user = JWTAuth::parseToken()->authenticate();
-        $user->instructor();
+        $id = $user->instructor->id;
 
         // Get the uploaded file from the 'thumbnail' key
         $file = $image['thumbnail'];
@@ -50,7 +50,7 @@ class CourseController extends Controller
         $imageUrl = url(Storage::url($path));
         // $data["thumbnail"] = $imageUrl;
 
-        $course = Course::create(array_merge($data, ["thumbnail" => $imageUrl]));
+        $course = Course::create(array_merge($data, ["thumbnail" => $imageUrl], ["instructor_id" => $id]));
 
         return response()->json([
             "message" => "Course created successfully.",
@@ -67,11 +67,11 @@ class CourseController extends Controller
      *  @param id
      *  @param request
      */
-    public function update(CourseRequest $courseRequest, $id)
+    public function update(CourseRequest $courseRequest, Course $course)
     {
         $attributes = $courseRequest->validated();
 
-        $course = Course::find($id);
+
         if (!$course) {
             return response()->json([
                 'message' => "Course not found.",
