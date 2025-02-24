@@ -12,8 +12,9 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class StudentAuthController extends Controller
 {
-    public function login(StudentLoginRequest $request): JsonResponse
+    public function login(StudentLoginRequest $request)
     {
+
         $credentials = $request->only('email', 'password');
 
         try {
@@ -39,12 +40,14 @@ class StudentAuthController extends Controller
 
     public function register(StudentRegisterRequest $request): JsonResponse
     {
+        //need to wrap DB:transistion()
         try {
             $user = User::query()->create([
                 'username' => $request->username,
                 'email' => $request->email,
                 'password' => $request->password,
             ]);
+            $user->student()->create(["user_id" => $user->id]);
 
             $token = JWTAuth::fromUser($user);
 

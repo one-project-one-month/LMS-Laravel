@@ -47,6 +47,7 @@ class InstructorAuthController extends Controller
                 'password' => $request->password
             ]);
 
+
             $instructor = Instructor::query()->create([
                 'user_id' => $user->id,
                 'nrc' => $request->nrc,
