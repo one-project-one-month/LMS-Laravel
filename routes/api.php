@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\Auth\InstructorAuthController;
 use App\Http\Controllers\Api\V1\Auth\StudentAuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CourseController;
+use App\Http\Controllers\Api\V1\SocialLinkController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,6 +22,10 @@ Route::middleware('jwt.auth')->group(function () {
     Route::delete('instructor/logout', [InstructorAuthController::class, 'logout']);
     Route::get('/categories/{id}', [CategoryController::class, 'show']);
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+    Route::get('courses/{course}/social-link', [SocialLinkController::class, 'show']);
+    Route::post('courses/{course}/social-link', [SocialLinkController::class, 'store']);
+    Route::patch('courses/{course}/social-link', [SocialLinkController::class, 'update']);
+
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);
