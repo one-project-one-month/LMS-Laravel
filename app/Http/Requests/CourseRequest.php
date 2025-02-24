@@ -24,7 +24,7 @@ class CourseRequest extends FormRequest
     {
 
         return [
-            
+
             "course_name" => ["sometimes", "required", "min:5", "max:225"],
             'thumbnail' => [
                 "sometimes",

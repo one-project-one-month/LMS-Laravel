@@ -22,7 +22,7 @@ return new class extends Migration
             $table->date('dob')->nullable();
             $table->string('address')->nullable();
             $table->string('profile_photo')->nullable();
-            // $table->foreignIdFor(Role::class);
+            $table->foreignIdFor(Role::class)->default(1);
             $table->boolean('is_available')->default(true);
             $table->timestamps();
         });

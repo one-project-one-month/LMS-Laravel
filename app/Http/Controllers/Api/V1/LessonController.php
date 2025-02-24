@@ -99,11 +99,11 @@ class LessonController extends Controller
         $lesson->update($attributes);
 
         return response()->json([
-            "message" => "",
+            "message" => "update successfully",
             "data" => [
                 'lesson' => $lesson
             ],
-            "status" => 200
+            
         ],200);
     }
 

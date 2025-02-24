@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Auth\AdminController;
 use App\Http\Controllers\Api\V1\Auth\InstructorAuthController;
+use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\StudentAuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CourseController;
@@ -9,10 +11,8 @@ use App\Http\Controllers\Api\V1\LessonController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-
-Route::post('student/register', [StudentAuthController::class, 'register']);
+Route::post("/auth/register", RegisterController::class);
 Route::post('student/login', [StudentAuthController::class, 'login']);
-Route::post('instructor/register', [InstructorAuthController::class, 'register']);
 Route::post('instructor/login', [InstructorAuthController::class, 'login']);
 
 Route::middleware('jwt.auth')->group(function () {
@@ -41,6 +41,7 @@ Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
 Route::post("/enroll/{course}", [EnrollmentController::class, "enroll"])->middleware('jwt.auth');
 
+
 // lesson api
 Route::get('/lessons', [LessonController::class, 'index']);
 Route::get('/lessons/{id}', [LessonController::class, 'show']);
@@ -49,3 +50,6 @@ Route::put('/lessons/{id}', [LessonController::class, 'update']);
 Route::delete('/lessons/{id}', [LessonController::class, 'destroy']);
 Route::post('/lessons/uploadUrl', [LessonController::class, 'uploadUrl']);
 
+Route::post("/admins/login", [AdminController::class, 'login']);
+Route::post("/admins/create", [AdminController::class, 'create']);
+Route::get("/admins", [AdminController::class, 'index']);

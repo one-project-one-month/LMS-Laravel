@@ -38,7 +38,7 @@ class StudentAuthController extends Controller
         ]);
     }
 
-    public function register(StudentRegisterRequest $request): JsonResponse
+    public function register($request): JsonResponse
     {
         //need to wrap DB:transistion()
         try {

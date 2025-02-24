@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\InstructorLoginRequest;
 use App\Http\Requests\InstructorRegisterRequest;
 use App\Models\Instructor;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -38,28 +41,27 @@ class InstructorAuthController extends Controller
         ]);
     }
 
-    public function register(InstructorRegisterRequest $request): JsonResponse
+    public function register($request)
     {
+
+        $data = $request->validated();
+        $userData = Arr::except($data, ["nrc", "edu_background", "role"]);
+        $instructorData = Arr::only($data, ["nrc", "edu_background"]);
+
+        $instructor_role_id = Role::query()->where("role", "instructor")->first()->id;
+
         try {
-            $user = User::query()->create([
-                'username' => $request->username,
-                'email' => $request->email,
-                'password' => $request->password
-            ]);
+            $user = User::query()->create(array_merge($userData, ["role_id" => $instructor_role_id]));
 
 
-            $instructor = Instructor::query()->create([
-                'user_id' => $user->id,
-                'nrc' => $request->nrc,
-                'edu_background' => $request->edu_background
-            ]);
+            $instructor =   $user->instructor()->create($instructorData);
 
             $token = JWTAuth::fromUser($user);
 
             return response()->json([
                 'message' => 'Instructor registered successfully',
                 'data' => [
-                    'instructor' => $instructor,
+                    'instructor' => $user,
                     'token' => $token
                 ]
             ]);

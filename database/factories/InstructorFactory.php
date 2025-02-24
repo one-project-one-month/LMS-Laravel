@@ -18,7 +18,7 @@ class InstructorFactory extends Factory
     public function definition(): array
     {
         return [
-            "user_id" => User::factory(),
+            "user_id" => User::factory(["role_id" => 2]),
             'nrc' => $this->faker->randomNumber(6, true),
             'edu_background' => $this->faker->randomElement(['Bachelor\'s Degree', 'Master\'s Degree', 'PhD'])
         ];
