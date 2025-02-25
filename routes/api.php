@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CourseController;
 use App\Http\Controllers\Api\V1\EnrollmentController;
 use App\Http\Controllers\Api\V1\LessonController;
+use App\Http\Controllers\StudentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +16,7 @@ Route::post("/auth/register", RegisterController::class);
 Route::post('student/login', [StudentAuthController::class, 'login']);
 Route::post('instructor/login', [InstructorAuthController::class, 'login']);
 
+Route::get('students', [StudentController::class, 'index']);
 Route::middleware('jwt.auth')->group(function () {
     Route::delete('student/logout', [StudentAuthController::class, 'logout']);
     Route::delete('instructor/logout', [InstructorAuthController::class, 'logout']);
