@@ -22,6 +22,7 @@ class CourseController extends Controller
      */
     public function index(Request $request)
     {
+
         try {
             $query = Course::query();
             $searchParam = $request->input('q');
@@ -31,6 +32,9 @@ class CourseController extends Controller
                         ->orWhere("description", "like", "%$searchParam%");
                 });
             };
+
+        $courses = Course::latest()->filter(request(['search','type','level','category','instructor']))->get();
+
 
 
             $filterBy = $request->input("filter_by");
