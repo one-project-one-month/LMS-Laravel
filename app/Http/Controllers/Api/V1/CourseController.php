@@ -20,7 +20,7 @@ class CourseController extends Controller
      */
     public function index()
     {
-        $courses = Course::all();
+        $courses = Course::latest()->filter(request(['search','type','level','category','instructor']))->get();
 
         return response()->json([
             "message" => "Courses retrieved successfully.",
