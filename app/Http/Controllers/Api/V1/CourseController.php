@@ -33,7 +33,7 @@ class CourseController extends Controller
                 });
             };
 
-        $courses = Course::latest()->filter(request(['search','type','level','category','instructor']))->get();
+            $courses = Course::latest()->filter(request(['search', 'type', 'level', 'category', 'instructor']))->get();
 
 
 
@@ -105,7 +105,7 @@ class CourseController extends Controller
     public function update(CourseRequest $courseRequest, Course $course)
     {
         $attributes = $courseRequest->validated();
-
+// need to fill photo update
 
         if (!$course) {
             return response()->json([

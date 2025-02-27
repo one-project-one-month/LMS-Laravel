@@ -33,9 +33,9 @@ class Course extends Model
 
     public function scopeFilter($query, $filter)
     {
-        $query->when($filter['search']??false, function ($query,$search){
-            $query->where(function($query) use ($search) {
-                $query->where('course_name','like', '%' . $search . '%');
+        $query->when($filter['search'] ?? false, function ($query, $search) {
+            $query->where(function ($query) use ($search) {
+                $query->where('course_name', 'like', '%' . $search . '%');
             });
         });
 
@@ -48,15 +48,14 @@ class Course extends Model
         });
 
         $query->when($filter['category'] ?? false, function ($query, $search) {
-            $query->whereHas('category', function ($query) use($search) {
+            $query->whereHas('category', function ($query) use ($search) {
                 $query->where('name', 'like', '%' . $search . '%');
             });
         });
-
+    }
 
     public function socialLink(): HasOne
     {
         return $this->hasOne(SocialLink::class);
-
     }
 }

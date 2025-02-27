@@ -19,9 +19,11 @@ class LessonRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+    
     public function rules(): array
     {
         return [
+
             "course_id" => ['required',"exists:courses,id"],
             "title" => ['required',"min:3","max:225","string"],
             "lesson_detail" => ['required','string'],
@@ -44,7 +46,7 @@ class LessonRequest extends FormRequest
             'lesson_detail.string' => 'The lesson detail must be a string.',
 
             'is_available.boolean' => 'The availability must be true or false.',
-            
+
             'video_url.required' => 'The video URL is required.',
             'video_url.string' => 'The video URL must be a string.',
         ];

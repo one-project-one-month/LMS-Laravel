@@ -17,10 +17,13 @@ class EnrollmentController extends Controller
     public function enroll(Request $request, Course $course)
     {
 
+
         // $user = auth()->user();
         $user = JWTAuth::parseToken()->authenticate();
         $student = $user->student;
-        $enroll =     $student->courses()->attach($course);
+        if ($student) {
+            $enroll =     $student->courses()->attach($course);
+        }
 
 
         return response()->json([
@@ -32,93 +35,46 @@ class EnrollmentController extends Controller
                 "enroll" => $enroll
             ]
         ]);
-
-
-        $categories = Category::all();
-        return response()->json([
-            'message' => 'Categories retrived successfully',
-            'data' => $categories
-        ], 200);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        $category  = Category::create([
-            'name' => $request->name,
-        ]);
 
-        return response()->json([
-            'message' => 'Category created successfully',
-            'data' => $category,
-        ]);
-    }
 
     /**
      * Display the specified resource.
      */
-    public function show($id)
-    {
-        $category = Category::find($id);
-        if (!$category) {
-            return response()->json(
-                [
-                    'message' => 'Category not found'
-                ],
-                404
-            );
-        }
-
-        return response()->json(
-            ['data' => $category],
-            200
-        );
-    }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
-    {
-        $category = Category::find($id);
 
-        if (!$category) {
-            return response()->json([
-                'message' => 'Category not found',
-            ], 404);
-        }
-        $category->update([
-            'name' => $request->name,
-        ]);
-
-        return response()->json([
-            'message' => 'Category updated successfully',
-            'data' => $category,
-        ]);
-    }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function unroll($course)
     {
-        $category = Category::find($id);
-        if (!$category) {
-            return response()->json(
-                [
-                    'message' => 'Category not found'
-                ],
-                404
-            );
+
+
+
+        $user = JWTAuth::parseToken()->authenticate();
+        $student = $user->student;
+        if ($student) {
+            $student->courses()->detach($course->id);
         }
 
-        $category->delete();
 
-        return response()->json(
-            ['message' => 'Category deleted successfully'],
-            200
-        );
+
+        return response()->json([
+            "message" => "you unenroll the $course->course_name successfully ",
+            "data" => [
+                "user" => $user,
+
+                "course" => $course,
+
+            ]
+        ]);
     }
 }

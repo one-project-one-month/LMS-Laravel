@@ -46,6 +46,7 @@ Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
 
 Route::post("/enroll/{course}", [EnrollmentController::class, "enroll"])->middleware('jwt.auth');
+Route::post("/unroll/{course}", [EnrollmentController::class, "unroll"])->middleware('jwt.auth');
 
 
 // lesson api
