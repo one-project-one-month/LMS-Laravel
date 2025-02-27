@@ -48,9 +48,9 @@ Route::post("/enroll/{course}", [EnrollmentController::class, "enroll"])->middle
 
 // lesson api
 Route::get('/lessons', [LessonController::class, 'index']);
-Route::get('/lessons/{id}', [LessonController::class, 'show']);
-Route::post('/lessons', [LessonController::class, 'store']);
-Route::put('/lessons/{id}', [LessonController::class, 'update']);
-Route::delete('/lessons/{id}', [LessonController::class, 'destroy']);
-Route::post('/lessons/uploadUrl', [LessonController::class, 'uploadUrl']);
+Route::get('/lessons/{id}', [LessonController::class, 'show'])->middleware('jwt.auth', 'can:view,lesson');;
+Route::post('/lessons', [LessonController::class, 'store'])->middleware('jwt.auth','can:create,lesson');
+Route::put('/lessons/{id}', [LessonController::class, 'update'])->middleware('jwt.auth', 'can:update,lesson');
+Route::delete('/lessons/{id}', [LessonController::class, 'destroy'])->middleware('jwt.auth', 'can:delete,lesson');
+Route::post('/lessons/uploadUrl', [LessonController::class, 'uploadUrl'])->middleware('jwt.auth', 'can:uploadVideoUrl,lesson');
 
