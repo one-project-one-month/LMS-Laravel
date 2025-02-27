@@ -35,10 +35,7 @@ class StudentController extends Controller
             ]
         ]);
     }
-    public function search(Request $request)
-    {
-        $search = $request->query("q");
-    }
+
     public function index(Request $request)
     {
 
@@ -60,9 +57,6 @@ class StudentController extends Controller
         }
 
 
-
-
-
         // FILTER FUNCTIONALITY
         // is_active = true or false
         $filterBy = $request->input('filter_by');
@@ -75,9 +69,9 @@ class StudentController extends Controller
 
         $validSortColumns = ['id', 'email', 'dob'];
         $sortBy = in_array($request->input('sort_by'), $validSortColumns, true) ? $request->input('sort_by') : 'id';
-        $sortDirection = in_array($request->input('sort_direction'), ['asc', 'desc'], true) ? $request->input('sort_direction') : 'desc'; {
-            $query->orderBy($sortBy, $sortDirection);
-        }
+        $sortDirection = in_array($request->input('sort_direction'), ['asc', 'desc'], true) ? $request->input('sort_direction') : 'desc';
+        $query->orderBy($sortBy, $sortDirection);
+
 
 
 
@@ -94,7 +88,7 @@ class StudentController extends Controller
 
         $limit = $request->input('limit', 10);
         $limit = (is_numeric($limit) && $limit > 0 && $limit <= 100) ? (int) $limit : 10;
-        // dd($query->toSql());
+
         $students = $query->paginate($limit);
 
 

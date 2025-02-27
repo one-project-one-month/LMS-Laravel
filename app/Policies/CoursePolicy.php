@@ -23,7 +23,11 @@ class CoursePolicy
 
     public function view(User $user, Course $course): bool
     {
-        return false;
+        return true;
+    }
+    public function course_details(User $user, Course $course): bool
+    {
+        return ($user->role_id === get_role_id("instructor") && $user->instructor->id === $course->instructor_id) or $user->role_id === get_role_id("admin");
     }
 
 
@@ -48,6 +52,6 @@ class CoursePolicy
      */
     public function delete(User $user, Course $course): bool
     {
-        return $user->instructor->id === $course->instructor_id  or $user->id === 1  ;
+        return $user->instructor->id === $course->instructor_id  or $user->id === 1;
     }
 }
