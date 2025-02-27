@@ -14,10 +14,10 @@ class StudentAuthController extends Controller
 {
     public function login(StudentLoginRequest $request): JsonResponse
     {
-        $credentials = $request->only('email', 'password');
+        $data = $request->validated();
 
         try {
-            if (!$token = JWTAuth::attempt($credentials)) {
+            if (!$token = JWTAuth::attempt($data)) {
                 return response()->json([
                     'message' => 'Invalid credentials',
                 ], 401);
@@ -39,11 +39,13 @@ class StudentAuthController extends Controller
 
     public function register(StudentRegisterRequest $request): JsonResponse
     {
+        $data = $request->validated();
+
         try {
             $user = User::query()->create([
-                'username' => $request->username,
-                'email' => $request->email,
-                'password' => $request->password,
+                'username' => $data->username,
+                'email' => $data->email,
+                'password' => $data->password,
             ]);
 
             $token = JWTAuth::fromUser($user);
