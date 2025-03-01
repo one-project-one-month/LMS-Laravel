@@ -25,6 +25,7 @@ class LessonPolicy
         return $user->role->name === "instructor" || $user->student->courses->contains($courserId);
     }
 
+
     /**
      * Determine whether the user can create models.
      */

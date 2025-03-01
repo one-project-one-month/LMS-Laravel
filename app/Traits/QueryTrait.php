@@ -1,46 +1,11 @@
 <?php
 
-namespace App\Models;
+namespace App\Traits;
 
-
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-
-class Course extends Model
+trait QueryTrait
 {
-    use HasFactory;
-    protected $guarded = [];
-
-    public function instructor()
-    {
-        return $this->belongsTo(Instructor::class);
-    }
-    public function students()
-    {
-        return $this->belongsToMany(Student::class, "enrollments", "course_id", "user_id");
-    }
-
-    public function lessons()
-    {
-        return $this->hasMany(Lesson::class);
-    }
-
-
-    public function category()
-    {
-        return $this->belongsTo(Category::class);
-    }
-
-
-    public function socialLink(): HasOne
-    {
-        return $this->hasOne(SocialLink::class);
-    }
-
     public function scopeFilter($query, $filter)
     {
-
         $query->when($filter['search'] ?? false, function ($query, $value) {
             $query->where(function ($query) use ($value) {
 

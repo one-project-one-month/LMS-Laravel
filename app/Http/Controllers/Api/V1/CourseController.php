@@ -22,27 +22,8 @@ class CourseController extends Controller
      */
     public function index(Request $request)
     {
-
         try {
-            $query = Course::query();
-            $searchParam = $request->input('q');
-            if ($searchParam) {
-                $query->where(function ($q) use ($searchParam) {
-                    $q->where('course_name', "like", "%$searchParam%")
-                        ->orWhere("description", "like", "%$searchParam%");
-                });
-            };
-
-            $courses = Course::latest()->filter(request(['search', 'type', 'level', 'category', 'instructor']))->get();
-
-
-
-            $filterBy = $request->input("filter_by");
-            $filterValue = $request->input("filter_value");
-            if ($filterBy && $filterValue) {
-                $query->where($filterBy, $filterValue);
-            }
-
+            $query = Course::query()->filter(request());
             $validSortColumns = ['id', 'price', 'created_at'];
             $sortBy = in_array($request->input("sort_by"), $validSortColumns, true) ? $request->input("sort_by") : "id";
             $sortDirection = in_array($request->input("sort_direction"), $validSortColumns, true) ? $request->input("sort_direction") : "desc";
@@ -51,6 +32,8 @@ class CourseController extends Controller
             $limit = $request->input("limit", 10);
             $limit = (is_numeric($limit) && $limit > 0 && $limit <= 100) ? $limit : 10;
             $courses = $query->paginate($limit);
+
+
             return response()->json([
                 "message" => "Courses retrieved successfully.",
                 "data" => [
@@ -105,7 +88,7 @@ class CourseController extends Controller
     public function update(CourseRequest $courseRequest, Course $course)
     {
         $attributes = $courseRequest->validated();
-// need to fill photo update
+        // need to fill photo update
 
         if (!$course) {
             return response()->json([

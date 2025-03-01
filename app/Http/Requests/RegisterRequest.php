@@ -27,8 +27,8 @@ class RegisterRequest extends FormRequest
 
             'username' => ['required', 'string'],
             'email' => ['required', 'email', Rule::unique('users', 'email')],
-            'password' => ['required', 'string', 'min:8'],
-
+            'password' => ['required', 'string', 'min:8', "confirmed"],
+            "password_confirmation" => ["required", "string", "min:8"],
             "role" => ["required"]
 
         ];
@@ -55,6 +55,7 @@ class RegisterRequest extends FormRequest
             'email.email' => 'Please provide a valid email address.',
             'email.unique' => 'This email is already taken.',
             'password.required' => 'Password is required.',
+            'password.confirmed' => 'Password confirmation does not match.',
             'password.string' => 'Password must be a valid string.',
             'password.min' => 'Password must be at least 8 characters long.',
             'nrc.required' => 'NRC field is required.',

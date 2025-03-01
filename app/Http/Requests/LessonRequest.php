@@ -19,16 +19,16 @@ class LessonRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    
+
     public function rules(): array
     {
         return [
 
-            "course_id" => ['required',"exists:courses,id"],
-            "title" => ['required',"min:3","max:225","string"],
-            "lesson_detail" => ['required','string'],
-            "is_available" => ['nullable','boolean'],
-            "video_url" => ['required','string']
+            "course_id" => [ 'required', "exists:courses,id" ],
+            "title" => ['required', "min:3", "max:225", "string"],
+            "lesson_detail" => ['required', 'string'],
+            "is_available" => ['nullable', 'boolean'],
+            "video_url" => ['required', 'string']
         ];
     }
     public function messages(): array
