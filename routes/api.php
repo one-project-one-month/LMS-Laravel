@@ -19,7 +19,9 @@ Route::post("/auth/login", [AuthController::class, "login"]);
 
 
 Route::get('/students', [StudentController::class, 'index']);
+Route::post('/students/suspend', [StudentController::class, 'suspend'])->middleware(['jwt.auth', 'admin']);
 Route::get('/instructors', [InstructorController::class, 'index']);
+Route::post('/instructors/suspend', [InstructorController::class, 'suspend'])->middleware(['jwt.auth', 'admin']);
 Route::middleware('jwt.auth')->group(function () {
     Route::delete("/auth/logout", [AuthController::class, "destroy"]);
     Route::get('/categories/{id}', [CategoryController::class, 'show']);
@@ -27,7 +29,6 @@ Route::middleware('jwt.auth')->group(function () {
     Route::get('courses/{course}/social-link', [SocialLinkController::class, 'show']);
     Route::post('courses/{course}/social-link', [SocialLinkController::class, 'store']);
     Route::patch('courses/{course}/social-link', [SocialLinkController::class, 'update']);
-
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);
@@ -55,7 +56,7 @@ Route::post("/unroll/{course}", [EnrollmentController::class, "unroll"])->middle
 // lesson api
 Route::get('/lessons', [LessonController::class, 'index']);
 Route::get('/lessons/{id}', [LessonController::class, 'show'])->middleware('jwt.auth', 'can:view,lesson');;
-Route::post('/lessons', [LessonController::class, 'store'])->middleware('jwt.auth','can:create,lesson');
+Route::post('/lessons', [LessonController::class, 'store'])->middleware('jwt.auth', 'can:create,lesson');
 Route::put('/lessons/{id}', [LessonController::class, 'update'])->middleware('jwt.auth', 'can:update,lesson');
 Route::delete('/lessons/{id}', [LessonController::class, 'destroy'])->middleware('jwt.auth', 'can:delete,lesson');
 Route::post('/lessons/uploadUrl', [LessonController::class, 'uploadUrl'])->middleware('jwt.auth', 'can:uploadVideoUrl,lesson');

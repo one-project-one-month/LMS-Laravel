@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Instructor;
+use Exception;
 use Illuminate\Http\Request;
 
 class InstructorController extends Controller
@@ -57,5 +58,41 @@ class InstructorController extends Controller
                 "students" => $students
             ]
         ]);
+    }
+    public function suspend(Request $request)
+    {
+
+        try {
+            $id = $request->validate([
+                "id" => "required|exists:students,id"
+            ]);
+
+            $instructor = Instructor::find($id["id"]);
+            if (!$instructor) {
+                return response()->json([
+                    "message" => "Instructor not found.",
+                ], 404);
+            }
+            if ($instructor->user->is_available == false) {
+                $instructor->user->update(["is_available" => true]);
+                return response()->json([
+                    "message" => "Instructor is  unsuspend successfully.",
+                ]);
+            } else {
+                $instructor->user->update(["is_available" => false]);
+                return response()->json([
+                    "message" => "Instructor is  suspended successfully.",
+                ]);
+            }
+
+
+
+
+
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage(),
+            ], 500);
+        }
     }
 }

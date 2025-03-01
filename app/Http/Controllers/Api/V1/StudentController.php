@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\Student;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use stdClass;
 
@@ -28,7 +29,7 @@ class StudentController extends Controller
         // INITIALIZE BASE QUERY
         $student_role_id = Role::where("role", "student")->first()->id;
         $query = Student::query()->with("user", function ($query) use ($student_role_id) {
-            $query->select(["id","username","email","dob","phone","address","role_id"])->where("role_id", $student_role_id);
+            $query->select(["id", "username", "email", "dob", "phone", "address", "role_id"])->where("role_id", $student_role_id);
         })->filter(request());
 
 
@@ -74,5 +75,41 @@ class StudentController extends Controller
                 "students" => $students
             ]
         ]);
+    }
+    public function suspend(Request $request)
+    {
+
+        try {
+            $id = $request->validate([
+                "id" => "required|exists:students,id"
+            ]);
+
+            $student = Student::find($id["id"]);
+            if (!$student) {
+                return response()->json([
+                    "message" => "Student not found.",
+                ], 404);
+            }
+            if ($student->user->is_available == false) {
+                $student->user->update(["is_available" => true]);
+                return response()->json([
+                    "message" => "Student   is  unsuspend successfully.",
+                ]);
+            } else {
+                $student->user->update(["is_available" => false]);
+                return response()->json([
+                    "message" => "Student   is  suspended successfully.",
+                ]);
+            }
+
+
+
+
+
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage(),
+            ], 500);
+        }
     }
 }
