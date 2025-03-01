@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AdminUpdateRequest;
+use App\Http\Resources\InstructorCollection;
 use App\Models\Admin;
+use App\Models\Instructor;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -111,43 +113,23 @@ class AdminController extends Controller
             ], 500);
         }
     }
+
+    public function getAllInstructors()
+    {
+        $instructors = Instructor::latest()->with('user')->get();
+
+        if (!$instructors) {
+            return response()->json([
+                'message' => "Instructors not found."
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Instructors retrieved successfully.',
+            'datas' => [
+                'instructors' => new InstructorCollection($instructors)
+            ]
+        ], 200);
+    }
 }
-/**
- * Store a newly created resource in storage.
- */
-// public function store(Request $request)
-// {
-//     //
-// }
 
-/**
- * Display the specified resource.
- */
-// public function show(Admin $admin)
-// {
-//     //
-// }
-
-/**
- * Show the form for editing the specified resource.
- */
-// public function edit(Admin $admin)
-// {
-//     //
-// }
-
-/**
- * Update the specified resource in storage.
- */
-// public function update(Request $request, Admin $admin)
-// {
-//     //
-// }
-
-/**
- * Remove the specified resource from storage.
- */
-    // public function destroy(Admin $admin)
-    // {
-    //     //
-    // }

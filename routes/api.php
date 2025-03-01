@@ -60,3 +60,5 @@ Route::post('/lessons/uploadUrl', [LessonController::class, 'uploadUrl'])->middl
 Route::post("/admins/login", [AdminController::class, 'login']);
 Route::post("/admins/create", [AdminController::class, 'create']);
 Route::get("/admins", [AdminController::class, 'index']);
+
+Route::get('/dashboard/instructors', [AdminController::class, 'getAllInstructors']);

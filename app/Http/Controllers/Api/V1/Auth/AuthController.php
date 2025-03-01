@@ -34,7 +34,7 @@ class AuthController extends Controller
     }
     public function login(StudentLoginRequest $request)
     {
-        
+
         $credentials = $request->only("email", "password");
 
         try {
