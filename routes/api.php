@@ -39,8 +39,12 @@ Route::get("/courses", [CourseController::class, "index"]);
 Route::get("/courses/{course}", [CourseController::class, "show"]);
 Route::post("/courses", [CourseController::class, "store"])->middleware(["jwt.auth"]);
 Route::put("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
+Route::patch("/courses/publish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "can:update,course"]);
+Route::patch("/courses/unpublish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "can:update,course"]);
 Route::patch("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
+Route::post("/courses/{course}/thumbnail", [CourseController::class, "updateThumbnail"])->middleware(["jwt.auth"]);
 Route::delete("/courses/{id}", [CourseController::class, "destroy"])->middleware(["jwt.auth", "can:delete,course"]);
+Route::patch("/courses/{course}/complete", [CourseController::class, "complete"])->middleware(["jwt.auth"]);
 
 
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
@@ -58,6 +62,8 @@ Route::get('/lessons', [LessonController::class, 'index']);
 Route::get('/lessons/{id}', [LessonController::class, 'show'])->middleware('jwt.auth', 'can:view,lesson');;
 Route::post('/lessons', [LessonController::class, 'store'])->middleware('jwt.auth', 'can:create,lesson');
 Route::put('/lessons/{id}', [LessonController::class, 'update'])->middleware('jwt.auth', 'can:update,lesson');
+Route::patch('/lessons/publish/{lesson}', [LessonController::class, 'publish'])->middleware('jwt.auth', 'can:update,lesson');
+Route::patch('/lessons/unpublish/{lesson}', [LessonController::class, 'publish'])->middleware('jwt.auth', 'can:update,lesson');
 Route::delete('/lessons/{id}', [LessonController::class, 'destroy'])->middleware('jwt.auth', 'can:delete,lesson');
 Route::post('/lessons/uploadUrl', [LessonController::class, 'uploadUrl'])->middleware('jwt.auth', 'can:uploadVideoUrl,lesson');
 

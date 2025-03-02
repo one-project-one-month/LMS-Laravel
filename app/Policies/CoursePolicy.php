@@ -44,7 +44,18 @@ class CoursePolicy
      */
     public function update(User $user, Course $course): bool
     {
-        return $user->instructor->id === $course->instructor_id or $user->role_id === 1;
+        if (is_("instructor") or is_("admin")) {
+            return ($user->instructor->id === $course->instructor_id) or is_("admin");
+        } else {
+            return false;
+        }
+    }
+    public function complete(User $user, Course $course): bool
+    {
+
+
+
+        return ($user->instructor->id === $course->instructor_id);
     }
 
     /**

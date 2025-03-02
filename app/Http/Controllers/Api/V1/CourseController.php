@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CourseRequest;
 use App\Models\Course;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -16,6 +19,38 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class CourseController extends Controller
 {
+
+    public function complete(Request $request, Course $course)
+    {
+
+
+
+        try {
+            $attributes = $request->validate([
+                "user_id" => "required|exists:students,id",
+            ]);
+            if (is_enrolled($attributes["user_id"], $course->id)) {
+                if (Gate::allows("complete", $course)) {
+                    DB::table('enrollments')->where("user_id", $attributes["user_id"])->where("course_id", $course->id)->update(["is_completed" => true]);
+                    return response()->json([
+                        "message" =>  "success 🎉",
+                    ]);
+                } else {
+                    return response()->json([
+                        "message" => "you are not unauthorize "
+                    ], 403);
+                }
+            } else {
+                return response()->json([
+                    "message" => "Student is not enrolled the course!"
+                ], 404);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage(),
+            ], 500);
+        }
+    }
     /**
      *  Get all courses
      *  get - /api/courses
@@ -65,10 +100,10 @@ class CourseController extends Controller
         $file = $image['thumbnail'];
         $path = $file->storeAs('thumbnails', time() . "$" . $user->id  .  Str::snake($data["course_name"])  . "." . $file->getClientOriginalExtension(), 'public');
         // $imageUrl = asset('storage/' . $path);
-        $imageUrl = url(Storage::url($path));
+        // $imageUrl = url(Storage::url($path));
         // $data["thumbnail"] = $imageUrl;
 
-        $course = Course::create(array_merge($data, ["thumbnail" => $imageUrl], ["instructor_id" => $id]));
+        $course = Course::create(array_merge($data, ["thumbnail" => $path], ["instructor_id" => $id]));
 
         return response()->json([
             "message" => "Course created successfully.",
@@ -88,6 +123,9 @@ class CourseController extends Controller
     public function update(CourseRequest $courseRequest, Course $course)
     {
         $attributes = $courseRequest->validated();
+        if ($attributes["thumbnail"]) {
+            $attributes = Arr::except($attributes, "thumbnail");
+        }
         // need to fill photo update
 
         if (!$course) {
@@ -106,6 +144,69 @@ class CourseController extends Controller
             ],
             "status" => 200
         ], 200);
+    }
+    public function updateThumbnail(Request $request, Course $course)
+    {
+
+        $attr = $request->validate([
+            'thumbnail' => [
+                "required",
+                'file',
+                'mimes:jpg,jpeg,png',
+                'max:2048',
+            ],
+        ]);
+
+
+
+        $image = $attr["thumbnail"];
+
+        $oldPath = str_replace("/", "\\", $course->thumbnail);
+        if (File::exists(public_path("storage\\" . $oldPath))) {
+            File::delete(public_path("storage\\" . $oldPath));
+            return "File deleted successfully!";
+        } else {
+
+            $path = $image->storeAs('thumbnails', time() . "$" . auth()->id()  .  Str::snake($course->course_name)  . "." . $image->getClientOriginalExtension(), 'public');
+            $course->update(["thumbnail" => $path]);
+            return response()->json([
+                "message" => "Course thumbnail updated successfully.",
+
+
+            ], 200);
+        }
+    }
+    public function publish(Request $request, Course $course)
+    {
+
+
+        if (!$course) {
+            return response()->json([
+                'message' => "Course not found.",
+
+            ], 404);
+        }
+        try {
+            if ($course->is_available === true) {
+
+                $course->update(["is_available" => false]);
+                return response()->json([
+                    'message' => "Course  unpublished successfully.",
+
+                ], 400);
+            }
+            $course->update(["is_available" => true]);
+
+            return response()->json([
+                "message" => "Course published successfully.",
+
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => "failed to publish course",
+                "error" => $e->getMessage(),
+            ], 400);
+        }
     }
 
     /**
@@ -134,19 +235,18 @@ class CourseController extends Controller
     {
         $user = JWTAuth::parseToken()->authenticate();
         $isEnrolled = false;
-        return  Gate::allows("course_details", $course);
+
 
         if (is_("student") or Gate::allows("course_details", $course)) {
-            $student =  $user->student;
-            $courseLists = $student->courses;
-            foreach ($courseLists as $list) {
-                if ($list->id  === $course->id) {
-                    $isEnrolled = true;
-                    break;
-                }
+            if (is_("student")) {
+                $student =  $user->student;
+                $isEnrolled = $student->courses->contains("id", $course->id);
             }
+
             if ($isEnrolled or Gate::allows("course_details", $course)) {
-                $result = array_merge($course->toArray(), ["lessons" => $course->lessons->toArray()]);
+                $result = Course::with(["lessons" => function ($query) {
+                    $query->where("is_available", true);
+                }, "social_link:course_id,facebook,x,phone,telegram,email"])->find($course->id);
                 return response()->json([
                     "message" => "success",
                     "data" => [
@@ -155,6 +255,7 @@ class CourseController extends Controller
                 ]);
             }
         } else {
+            // no account state
             $result = Course::with(['lessons' => function ($query) {
                 $query->select("title", "course_id")->where("is_available", true);
             }])->find($course->id);

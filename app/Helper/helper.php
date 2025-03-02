@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Role;
+use App\Models\Student;
 
 function get_role_id($role)
 {
@@ -12,4 +13,11 @@ function is_($role)
     $user = auth()->user(); // Get the authenticated user
 
     return $user && $user->role_id === get_role_id($role);
+}
+function is_enrolled($studentId, $courseId)
+{
+    $student = Student::find($studentId);
+
+
+    return $student->courses->contains("id", $courseId);
 }

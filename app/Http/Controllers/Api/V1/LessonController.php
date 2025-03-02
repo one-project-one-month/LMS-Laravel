@@ -38,7 +38,8 @@ class LessonController extends Controller
      *  get - /api/lessons/:id
      *  @param id
      */
-    public function show($id){
+    public function show($id)
+    {
         $lesson = Lesson::find($id);
 
         if (!$lesson) {
@@ -54,7 +55,7 @@ class LessonController extends Controller
                 "lesson" => $lesson
             ],
             'status' => 200
-        ],200);
+        ], 200);
     }
 
     /**
@@ -83,7 +84,7 @@ class LessonController extends Controller
      * @param id
      * @param request
      */
-    public function update(LessonRequest $lessonRequest,$id)
+    public function update(LessonRequest $lessonRequest, $id)
     {
         $lesson = Lesson::find($id);
 
@@ -103,10 +104,41 @@ class LessonController extends Controller
             "data" => [
                 'lesson' => $lesson
             ],
-            
-        ],200);
+
+        ], 200);
     }
 
+    public function publish(Request $request, Lesson $lesson)
+    {
+
+        if (!$lesson) {
+            return response()->json([
+                'message' => "Lesson not found.",
+
+            ], 404);
+        }
+        try {
+            if ($lesson->is_available === true) {
+
+                $lesson->update(["is_available" => false]);
+                return response()->json([
+                    'message' => "Lesson  unpublished successfully.",
+
+                ], 400);
+            }
+            $lesson->update(["is_available" => true]);
+
+            return response()->json([
+                "message" => "Lesson published successfully.",
+
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => "failed to publish course",
+                "error" => $e->getMessage(),
+            ], 400);
+        }
+    }
     /**
      *  delete lesson
      *  delete - /api/lessons/:id
@@ -128,7 +160,7 @@ class LessonController extends Controller
         return response()->json([
             "message" => "Lesson delete successfully.",
             "status" => 200
-        ],200);
+        ], 200);
     }
 
     /**

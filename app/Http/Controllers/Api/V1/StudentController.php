@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Course;
 use App\Models\Role;
 use App\Models\Student;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use stdClass;
 
 class StudentController extends Controller
@@ -101,11 +103,6 @@ class StudentController extends Controller
                     "message" => "Student   is  suspended successfully.",
                 ]);
             }
-
-
-
-
-
         } catch (Exception $e) {
             return response()->json([
                 "message" => $e->getMessage(),

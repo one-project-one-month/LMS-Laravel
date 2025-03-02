@@ -33,7 +33,7 @@ class Course extends Model
     }
 
 
-    public function socialLink(): HasOne
+    public function social_link(): HasOne
     {
         return $this->hasOne(SocialLink::class);
     }
