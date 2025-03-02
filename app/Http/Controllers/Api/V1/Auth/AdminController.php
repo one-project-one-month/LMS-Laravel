@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AdminUpdateRequest;
 use App\Http\Resources\InstructorCollection;
+use App\Http\Resources\InstructorResource;
 use App\Models\Admin;
 use App\Models\Instructor;
 use App\Models\Role;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Arr;
@@ -116,7 +118,7 @@ class AdminController extends Controller
 
     public function getAllInstructors()
     {
-        $instructors = Instructor::latest()->with('user')->get();
+        $instructors = Instructor::latest()->with('user')->paginate(20);
 
         if (!$instructors) {
             return response()->json([
@@ -126,9 +128,36 @@ class AdminController extends Controller
 
         return response()->json([
             'message' => 'Instructors retrieved successfully.',
-            'datas' => [
-                'instructors' => new InstructorCollection($instructors)
-            ]
+            'instructors' => new InstructorCollection($instructors)
+        ], 200);
+    }
+
+    public function getAllAdmins()
+    {
+        $admins = Admin::latest()->with('user')->paginate(20);
+
+        if (!$admins) {
+            return response()->json([
+                'message' => "Admins not found."
+            ], 404);
+        }
+        return response()->json([
+            'message' => 'Instructors retrieved successfully.',
+            'admins' => $admins
+        ], 200);
+    }
+    public function getAllStudents()
+    {
+        $students = Student::latest()->with('user')->paginate(20);
+
+        if (!$students) {
+            return response()->json([
+                'message' => "Students not found."
+            ], 404);
+        }
+        return response()->json([
+            'message' => 'Instructors retrieved successfully.',
+            'students' => $students
         ], 200);
     }
 }

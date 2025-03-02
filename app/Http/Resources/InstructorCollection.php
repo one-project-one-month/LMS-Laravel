@@ -7,26 +7,24 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class InstructorCollection extends ResourceCollection
 {
-    /**
-     * Transform the resource collection into an array.
-     *
-     * @return array<int|string, mixed>
-     */
     public function toArray(Request $request): array
     {
-        return $this->collection->map(function ($instructor) {
-            return [
-                'id' => $instructor->id,
-                'username' => $instructor->user->username,
-                'email' => $instructor->user->email,
-                'phone' => $instructor->user->phone,
-                'dob' => $instructor->user->dob,
-                'address' => $instructor->user->address,
-                'nrc' => $instructor->nrc,
-                'edu_background' => $instructor->edu_background,
-                'profile_photo' => $instructor->user->profile_photo,
-                // 'role' => $instructor->user->role
-            ];
-        })->toArray();
+        return [
+            'data' => $this->collection, // The actual instructor data
+            'pagination' => [
+                'current_page' => $this->currentPage(),
+                'per_page' => $this->perPage(),
+                'total' => $this->total(),
+                'last_page' => $this->lastPage(),
+                'from' => $this->firstItem(),
+                'to' => $this->lastItem(),
+            ],
+            'links' => [
+                'first' => $this->url(1),
+                'last' => $this->url($this->lastPage()),
+                'prev' => $this->previousPageUrl(),
+                'next' => $this->nextPageUrl(),
+            ],
+        ];
     }
 }
