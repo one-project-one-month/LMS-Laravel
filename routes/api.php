@@ -61,6 +61,9 @@ Route::post("/admins/login", [AdminController::class, 'login']);
 Route::post("/admins/create", [AdminController::class, 'create']);
 Route::get("/admins", [AdminController::class, 'index']);
 
-Route::get('/dashboard/instructors', [AdminController::class, 'getAllInstructors']);
 Route::get('/dashboard/admins', [AdminController::class, 'getAllAdmins']);
 Route::get('/dashboard/students', [AdminController::class, 'getAllStudents']);
+Route::get('/dashboard/instructors', [AdminController::class, 'getAllInstructors']);
+
+// Route::get('/dashboard/{instructor}/courses', [AdminController::class, 'getCourseFromInstructor']);
+Route::get('/dashboard/courses/{course}/students', [AdminController::class, 'getStudentsFromCourse']);

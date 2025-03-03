@@ -2,19 +2,23 @@
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\AdminUpdateRequest;
-use App\Http\Resources\InstructorCollection;
-use App\Http\Resources\InstructorResource;
-use App\Models\Admin;
-use App\Models\Instructor;
 use App\Models\Role;
-use App\Models\Student;
-use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Admin;
+use App\Models\Course;
+use App\Models\Student;
+use App\Models\Instructor;
 use Illuminate\Support\Arr;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\AdminUpdateRequest;
+use App\Http\Resources\CourseStudentsResource;
+use App\Http\Resources\InstructorResource;
+use App\Http\Resources\InstructorCollection;
+
+use function PHPSTORM_META\map;
 
 class AdminController extends Controller
 {
@@ -116,9 +120,11 @@ class AdminController extends Controller
         }
     }
 
-    public function getAllInstructors()
+    public function getAllInstructors(Request $request)
     {
-        $instructors = Instructor::latest()->with('user')->paginate(20);
+        $limit = ($request->limit != null && (int) $request->limit <= 100) ? (int) $request->limit : 20;
+
+        $instructors = Instructor::latest()->with('user')->paginate($limit);
 
         if (!$instructors) {
             return response()->json([
@@ -132,9 +138,11 @@ class AdminController extends Controller
         ], 200);
     }
 
-    public function getAllAdmins()
+    public function getAllAdmins(Request $request)
     {
-        $admins = Admin::latest()->with('user')->paginate(20);
+        $limit = ($request->limit != null && (int) $request->limit <= 100) ? (int) $request->limit : 20;
+
+        $admins = Admin::latest()->with('user')->paginate($limit);
 
         if (!$admins) {
             return response()->json([
@@ -146,9 +154,11 @@ class AdminController extends Controller
             'admins' => $admins
         ], 200);
     }
-    public function getAllStudents()
+    public function getAllStudents(Request $request)
     {
-        $students = Student::latest()->with('user')->paginate(20);
+        $limit = ($request->limit != null && (int)$request->limit <= 100) ? (int)$request->limit : 20;
+
+        $students = Student::latest()->with('user')->paginate($limit);
 
         if (!$students) {
             return response()->json([
@@ -158,6 +168,24 @@ class AdminController extends Controller
         return response()->json([
             'message' => 'Instructors retrieved successfully.',
             'students' => $students
+        ], 200);
+    }
+
+    public function getStudentsFromCourse(Course $course,Request $request)
+    {
+        $is_completed = $request->is_completed != null ? filter_var($request->is_completed, FILTER_VALIDATE_BOOLEAN) : false;
+
+        $students = $course->students()->with('user')->wherePivot('is_completed', $is_completed)->get();
+
+        if ($students->isEmpty() || !$students) {
+            return response()->json([
+                "message" => "There is no any student."
+            ]);
+        }
+
+        return response()->json([
+            'message' => "Data retrieved successfully.",
+            'students' => CourseStudentsResource::collection($students)
         ], 200);
     }
 }
