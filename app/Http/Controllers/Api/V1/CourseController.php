@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CourseRequest;
+use App\Jobs\RequestCreateCourse;
+use App\Mail\CourseCreated;
 use App\Models\Course;
 use Exception;
+use GuzzleHttp\Psr7\Message;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -268,5 +271,12 @@ class CourseController extends Controller
                 ]
             ]);
         }
+    }
+    public function requestAdmin(Course $course)
+    {
+        RequestCreateCourse::dispatch(new CourseCreated($course));
+        return response()->json([
+            "message" => "Successfully request to publish your course"
+        ])
     }
 }

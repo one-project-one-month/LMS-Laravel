@@ -10,8 +10,12 @@ use App\Http\Controllers\Api\V1\EnrollmentController;
 use App\Http\Controllers\Api\V1\InstructorController;
 use App\Http\Controllers\Api\V1\LessonController;
 use App\Http\Controllers\Api\V1\StudentController;
+use App\Jobs\RequestCreateCourse;
+use App\Mail\CourseCreated;
+use App\Models\Course;
 use App\Models\Instructor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 Route::post("/auth/register", [AuthController::class, "register"]);
@@ -39,13 +43,13 @@ Route::get("/courses", [CourseController::class, "index"]);
 Route::get("/courses/{course}", [CourseController::class, "show"]);
 Route::post("/courses", [CourseController::class, "store"])->middleware(["jwt.auth"]);
 Route::put("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
-Route::patch("/courses/publish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "can:update,course"]);
+Route::patch("/courses/publish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "admin"]);
 Route::patch("/courses/unpublish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "can:update,course"]);
 Route::patch("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
 Route::post("/courses/{course}/thumbnail", [CourseController::class, "updateThumbnail"])->middleware(["jwt.auth"]);
 Route::delete("/courses/{id}", [CourseController::class, "destroy"])->middleware(["jwt.auth", "can:delete,course"]);
 Route::patch("/courses/{course}/complete", [CourseController::class, "complete"])->middleware(["jwt.auth"]);
-
+Route::get("/courses/{course}/request", [CourseController::class , "request"])->middleware("jwt.auth" , "can:update,course");
 
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::put('/categories/{id}', [CategoryController::class, 'update']);
