@@ -31,7 +31,7 @@ class CourseRequest extends FormRequest
                 "required",
                 'file',
                 'mimes:jpg,jpeg,png',
-                // 'max:2048',
+                'max:2048',
             ],
             "type" => ["sometimes", "required", Rule::in(["free", "paid"])],
             "level" => ["sometimes", "required", Rule::in(["beginner", "intermediate", "advance"])],

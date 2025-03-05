@@ -19,4 +19,24 @@ class Student extends Model
                     ->withPivot('enrollment_date', 'is_completed', 'completed_date');
     }
 
+    public function scopeFilter($query, $filter)
+    {
+
+        $query->when($filter['search'] ?? false, function ($query, $value) {
+            $query->whereHas("user", function ($query) use ($value) {
+
+                $query->where('username', 'like', '%' . $value . '%')
+                    ->orWhere('email', 'like', '%' . $value . '%')
+                    ->orWhere('phone', 'like', '%' . $value . '%')
+                    ->orWhere('address', 'like', '%' . $value . '%');
+            });
+        });
+
+
+
+        $query->when($filter['is_available'] ?? false, function ($query, $value) {
+            $query->where('is_available', $value);
+        });
+    }
+
 }

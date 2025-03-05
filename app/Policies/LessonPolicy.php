@@ -22,8 +22,9 @@ class LessonPolicy
     public function view(User $user, Lesson $lesson): bool
     {
         $courserId = $lesson->course_id;
-        return $user->role->name === "instructor" || $user->student->courses->contains($courserId);
+        return $user->role->name === "admin" || $user->role->name === "instructor" || $user->student->courses->contains($courserId);
     }
+
 
     /**
      * Determine whether the user can create models.
@@ -51,9 +52,7 @@ class LessonPolicy
 
     public function uploadVideoUrl(User $user, Lesson $lesson): bool
     {
-        if ($user->role->name != "instructor") {
-            return false;
-        }
+
         return $user->role->name === "instructor" && $user->instructor->id === $lesson->course->instructor_id;
     }
 }

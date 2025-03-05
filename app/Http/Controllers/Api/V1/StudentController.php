@@ -1,30 +1,19 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1;
 
+use App\Http\Controllers\Controller;
+use App\Models\Course;
 use App\Models\Role;
 use App\Models\Student;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use stdClass;
 
 class StudentController extends Controller
 {
-    public function test()
-    {
-        $students = Student::with('user:username,email')
-            ->orderBy('id', 'desc')
-            ->paginate(10);
-
-
-
-        return response()->json([
-            "message" => "Students retrieved successfully.",
-            "data" => [
-                "students" => $students
-            ]
-        ]);
-    }
     public function show($id)
     {
         $student = Student::with('user:username,email')->find($id);
@@ -41,31 +30,11 @@ class StudentController extends Controller
 
         // INITIALIZE BASE QUERY
         $student_role_id = Role::where("role", "student")->first()->id;
-        $query = User::query()->where("role_id", $student_role_id);
-
-        // SEARCH FUNCTIONALITY
-
-        $searchTerm = $request->input('q');
-        if ($searchTerm) {
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('username', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('email', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('phone', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('dob', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('address', 'like', '%' . $searchTerm . '%');
-            });
-        }
+        $query = Student::query()->with("user", function ($query) use ($student_role_id) {
+            $query->select(["id", "username", "email", "dob", "phone", "address", "role_id"])->where("role_id", $student_role_id);
+        })->filter(request());
 
 
-        // FILTER FUNCTIONALITY
-        // is_active = true or false
-        $filterBy = $request->input('filter_by');
-        $filterVal = $request->input('filter_val');
-
-        if ($filterBy && $filterVal) {
-            $query->where($filterBy, $filterVal);
-        }
-        // SORT FUNCTIONALITY
 
         $validSortColumns = ['id', 'email', 'dob'];
         $sortBy = in_array($request->input('sort_by'), $validSortColumns, true) ? $request->input('sort_by') : 'id';
@@ -77,11 +46,7 @@ class StudentController extends Controller
 
 
 
-        // LOAD RELATIONSHIPS
 
-        // $query->with('user.addresses')->whereHas('user', function ($query) {
-        //     $query->where('role', 'customer'); // Filtering by a specific column in the 'users' table
-        // });
 
 
         // PAGINATION
@@ -112,5 +77,36 @@ class StudentController extends Controller
                 "students" => $students
             ]
         ]);
+    }
+    public function suspend(Request $request)
+    {
+
+        try {
+            $id = $request->validate([
+                "id" => "required|exists:students,id"
+            ]);
+
+            $student = Student::find($id["id"]);
+            if (!$student) {
+                return response()->json([
+                    "message" => "Student not found.",
+                ], 404);
+            }
+            if ($student->user->is_available == false) {
+                $student->user->update(["is_available" => true]);
+                return response()->json([
+                    "message" => "Student   is  unsuspend successfully.",
+                ]);
+            } else {
+                $student->user->update(["is_available" => false]);
+                return response()->json([
+                    "message" => "Student   is  suspended successfully.",
+                ]);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage(),
+            ], 500);
+        }
     }
 }

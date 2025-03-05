@@ -41,8 +41,16 @@ class LessonController extends Controller
      *  get - /api/courses/:id/lessons/:id
      *  @param ( course_id , lesson_id )
      */
-    public function show(Course $course,Lesson $lesson){
+
+    public function show($id)
+    {
+        $lesson = Lesson::find($id);
+
+
+
+
         if ($course->id !== $lesson->course_id) {
+
             return response()->json([
                 'message' => "Lesson not found in the $course->course_name course"
             ],404);
@@ -54,7 +62,7 @@ class LessonController extends Controller
                 "lesson" => new LessonResource($lesson)
             ],
             'status' => 200
-        ],200);
+        ], 200);
     }
 
     /**
@@ -82,7 +90,9 @@ class LessonController extends Controller
      * @param ( course_id , lesson_id )
      * @param request,( course_id - optional )
      */
+
     public function update(LessonRequest $lessonRequest,Course $course,Lesson $lesson)
+
     {
         if ($course->id !== $lesson->course_id) {
             return response()->json([
@@ -99,9 +109,42 @@ class LessonController extends Controller
                 'lesson' => new LessonResource($lesson)
             ],
 
-        ],200);
+
+        ], 200);
+
     }
 
+    public function publish(Request $request, Lesson $lesson)
+    {
+
+        if (!$lesson) {
+            return response()->json([
+                'message' => "Lesson not found.",
+
+            ], 404);
+        }
+        try {
+            if ($lesson->is_available === true) {
+
+                $lesson->update(["is_available" => false]);
+                return response()->json([
+                    'message' => "Lesson  unpublished successfully.",
+
+                ], 400);
+            }
+            $lesson->update(["is_available" => true]);
+
+            return response()->json([
+                "message" => "Lesson published successfully.",
+
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => "failed to publish course",
+                "error" => $e->getMessage(),
+            ], 400);
+        }
+    }
     /**
      *  delete lesson
      *  delete - /api/courses/:id/lessons/:id
@@ -119,7 +162,9 @@ class LessonController extends Controller
 
         return response()->json([
             "message" => "Lesson delete successfully.",
-        ],200);
+
+        ], 200);
+
     }
 
     /**

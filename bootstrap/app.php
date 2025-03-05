@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\JwtAuthMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 use Illuminate\Validation\UnauthorizedException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,12 +18,45 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'jwt.auth' => JwtAuthMiddleware::class
+            'jwt.auth' => JwtAuthMiddleware::class,
+            "admin" => AdminMiddleware::class
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (UnauthorizedException $e) {
             return response()->json(["message" => "Unauthorized"], 403);
+        });
+        $exceptions->render(function (NotFoundHttpException $e, Request $request) {
+            if ($request->is("api/courses/*")) {
+
+                return response()->json([
+                    "message" => "Course is Not found",
+                    "error" => $e->getMessage()
+                ], 404);
+            }
+            if ($request->is("api/students/*")) {
+                return response()->json([
+                    "message" => "Student is Not found",
+                    "error" => $e->getMessage()
+                ], 404);
+            }
+            if ($request->is("api/instructors/*")) {
+                return response()->json([
+                    "message" => "Instructor is Not found",
+                    "error" => $e->getMessage()
+                ], 404);
+            }
+            if ($request->is("api/lessons/*")) {
+                return response()->json([
+                    "message" => "Lesson is Not found",
+                    "error" => $e->getMessage()
+                ], 404);
+            }
+
+            return response()->json([
+                "message" => "Resource not found",
+                "error" => $e->getMessage()
+            ], 404);
         });
         //
     })->create();

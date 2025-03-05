@@ -15,13 +15,11 @@ class SocialLinkResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'facebook' => $this->facebook ?? null,
-            'x' => $this->x ?? null,
-            'telegram' => $this->telegram ?? null,
-            'phone' => $this->phone ?? null,
-            'email' => $this->email ?? null,
-            'created_at' => $this->created_at->toIso8601String(),
-            'updated_at' => $this->updated_at->toIso8601String(),
+            'facebook' => $this->when($this->facebook ?? false, $this->facebook),
+            'x' => $this->when($this->x ?? false, $this->x),
+            'telegram' => $this->when($this->telegram ?? false, $this->telegram),
+            'phone' => $this->when($this->phone ?? false, $this->phone),
+            'email' => $this->when($this->email ?? false, $this->email),
         ];
     }
 }

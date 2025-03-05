@@ -20,7 +20,7 @@ class AuthController extends Controller
 {
 
 
-    public function register(RegisterRequest $request): JsonResponse
+    public function register(RegisterRequest $request)
     {
         if ($request->input("role") === "instructor") {
             $responseJson =   app(InstructorAuthController::class)->register($request);
