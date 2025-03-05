@@ -24,11 +24,10 @@ class RegisterRequest extends FormRequest
     {
         $role = $this->input("role");
         $commonRules = [
-
             'username' => ['required', 'string'],
             'email' => ['required', 'email', Rule::unique('users', 'email')],
             'password' => ['required', 'string', 'min:8', "confirmed"],
-            "password_confirmation" => ["required", "string", "min:8"],
+
             "role" => ["required"]
 
         ];

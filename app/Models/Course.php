@@ -16,6 +16,19 @@ class Course extends Model
     {
         return $this->belongsTo(Instructor::class);
     }
+    public function instructorUser()
+    {
+        return $this->hasOneThrough(User::class, Instructor::class, "id", "id", "instructor_id", "user_id");
+
+        // User::class → The final model you want to access.
+        // Instructor::class → The intermediate model.
+        // 'id' (3rd argument) → The primary key of the Instructor model.
+        // 'id' (4th argument) → The primary key of the User model.
+        // 'instructor_id' (5th argument) → Foreign key in Course pointing to Instructor.
+        // 'user_id' (6th argument) → Foreign key in Instructor pointing to User.
+
+    }
+
     public function students()
     {
         return $this->belongsToMany(Student::class, "enrollments", "course_id", "user_id");

@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CourseRequest;
+use App\Http\Resources\CourseResource;
 use App\Jobs\RequestCreateCourse;
 use App\Mail\CourseCreated;
 use App\Models\Course;
+use App\Models\Instructor;
 use Exception;
 use GuzzleHttp\Psr7\Message;
 use Illuminate\Database\Eloquent\Builder;
@@ -243,19 +245,17 @@ class CourseController extends Controller
         if (is_("student") or Gate::allows("course_details", $course)) {
             if (is_("student")) {
                 $student =  $user->student;
-                $isEnrolled = $student->courses->contains("id", $course->id);
+                $isEnrolled = is_enrolled($student->id, $course->id);
             }
 
             if ($isEnrolled or Gate::allows("course_details", $course)) {
-                $result = Course::with(["lessons" => function ($query) {
+                $result = Course::with(["lessons" => function ($query) use ($course) {
                     $query->where("is_available", true);
-                }, "social_link:course_id,facebook,x,phone,telegram,email"])->find($course->id);
-                return response()->json([
-                    "message" => "success",
-                    "data" => [
-                        "course" => $result
-                    ]
-                ]);
+                }, "social_link:course_id,facebook,x,phone,telegram,email", "category:id,name", "instructorUser" => function ($query) {
+                    $query->select("users.id", "users.username", "users.profile_photo", "instructors.edu_background");
+                }])->where("is_available", true)->findOrFail($course->id);
+
+                return CourseResource::make($result);
             }
         } else {
             // no account state
@@ -277,6 +277,6 @@ class CourseController extends Controller
         RequestCreateCourse::dispatch(new CourseCreated($course));
         return response()->json([
             "message" => "Successfully request to publish your course"
-        ])
+        ]);
     }
 }
