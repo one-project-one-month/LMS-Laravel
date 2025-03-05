@@ -67,6 +67,7 @@ Route::post("/unroll/{course}", [EnrollmentController::class, "unroll"])->middle
 
 
 // lesson api
+
 Route::get('/lessons', [LessonController::class, 'index']);
 Route::get('/lessons/{id}', [LessonController::class, 'show'])->middleware('jwt.auth', 'can:view,lesson');;
 Route::post('/lessons', [LessonController::class, 'store'])->middleware('jwt.auth', 'can:create,lesson');
@@ -74,8 +75,22 @@ Route::put('/lessons/{id}', [LessonController::class, 'update'])->middleware('jw
 Route::patch('/lessons/publish/{lesson}', [LessonController::class, 'publish'])->middleware('jwt.auth', 'can:update,lesson');
 Route::patch('/lessons/unpublish/{lesson}', [LessonController::class, 'publish'])->middleware('jwt.auth', 'can:update,lesson');
 Route::delete('/lessons/{id}', [LessonController::class, 'destroy'])->middleware('jwt.auth', 'can:delete,lesson');
+
+Route::get('/courses/{course}/lessons', [LessonController::class, 'index']);
+Route::get('/courses/{course}/lessons/{lesson}', [LessonController::class, 'show'])->middleware('jwt.auth', 'can:view,lesson');
+Route::post('/courses/{course}/lessons', [LessonController::class, 'store'])->middleware('jwt.auth', 'can:create,lesson');
+Route::put('/courses/{course}/lessons/{lesson}', [LessonController::class, 'update'])->middleware('jwt.auth', 'can:update,lesson');
+Route::delete('/courses/{course}/lessons/{lesson}', [LessonController::class, 'destroy'])->middleware('jwt.auth', 'can:delete,lesson');
+
 Route::post('/lessons/uploadUrl', [LessonController::class, 'uploadUrl'])->middleware('jwt.auth', 'can:uploadVideoUrl,lesson');
 
 Route::post("/admins/login", [AdminController::class, 'login']);
 Route::post("/admins/create", [AdminController::class, 'create']);
 Route::get("/admins", [AdminController::class, 'index']);
+
+Route::get('/dashboard/admins', [AdminController::class, 'getAllAdmins']);
+Route::get('/dashboard/students', [AdminController::class, 'getAllStudents']);
+Route::get('/dashboard/instructors', [AdminController::class, 'getAllInstructors']);
+
+// Route::get('/dashboard/{instructor}/courses', [AdminController::class, 'getCourseFromInstructor']);
+Route::get('/dashboard/courses/{course}/students', [AdminController::class, 'getStudentsFromCourse']);

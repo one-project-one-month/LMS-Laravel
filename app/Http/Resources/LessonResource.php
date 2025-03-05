@@ -14,11 +14,15 @@ class LessonResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+
         return     [
             "id" => $this->id,
             "title" => $this->title,
             "videoUrl" => $this->when($this->video_url, $this->video_url),
             "lessonDetail" => $this->lesson_detail,
+
+  
+
         ];
     }
 }
