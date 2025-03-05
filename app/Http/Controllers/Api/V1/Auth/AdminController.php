@@ -2,15 +2,23 @@
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\AdminUpdateRequest;
-use App\Models\Admin;
 use App\Models\Role;
-use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Admin;
+use App\Models\Course;
+use App\Models\Student;
+use App\Models\Instructor;
 use Illuminate\Support\Arr;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\AdminUpdateRequest;
+use App\Http\Resources\CourseStudentsResource;
+use App\Http\Resources\InstructorResource;
+use App\Http\Resources\InstructorCollection;
+
+use function PHPSTORM_META\map;
 
 class AdminController extends Controller
 {
@@ -111,43 +119,74 @@ class AdminController extends Controller
             ], 500);
         }
     }
+
+    public function getAllInstructors(Request $request)
+    {
+        $limit = ($request->limit != null && (int) $request->limit <= 100) ? (int) $request->limit : 20;
+
+        $instructors = Instructor::latest()->with('user')->paginate($limit);
+
+        if (!$instructors) {
+            return response()->json([
+                'message' => "Instructors not found."
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Instructors retrieved successfully.',
+            'instructors' => new InstructorCollection($instructors)
+        ], 200);
+    }
+
+    public function getAllAdmins(Request $request)
+    {
+        $limit = ($request->limit != null && (int) $request->limit <= 100) ? (int) $request->limit : 20;
+
+        $admins = Admin::latest()->with('user')->paginate($limit);
+
+        if (!$admins) {
+            return response()->json([
+                'message' => "Admins not found."
+            ], 404);
+        }
+        return response()->json([
+            'message' => 'Instructors retrieved successfully.',
+            'admins' => $admins
+        ], 200);
+    }
+    public function getAllStudents(Request $request)
+    {
+        $limit = ($request->limit != null && (int)$request->limit <= 100) ? (int)$request->limit : 20;
+
+        $students = Student::latest()->with('user')->paginate($limit);
+
+        if (!$students) {
+            return response()->json([
+                'message' => "Students not found."
+            ], 404);
+        }
+        return response()->json([
+            'message' => 'Instructors retrieved successfully.',
+            'students' => $students
+        ], 200);
+    }
+
+    public function getStudentsFromCourse(Course $course,Request $request)
+    {
+        $is_completed = $request->is_completed != null ? filter_var($request->is_completed, FILTER_VALIDATE_BOOLEAN) : false;
+
+        $students = $course->students()->with('user')->wherePivot('is_completed', $is_completed)->get();
+
+        if ($students->isEmpty() || !$students) {
+            return response()->json([
+                "message" => "There is no any student."
+            ]);
+        }
+
+        return response()->json([
+            'message' => "Data retrieved successfully.",
+            'students' => CourseStudentsResource::collection($students)
+        ], 200);
+    }
 }
-/**
- * Store a newly created resource in storage.
- */
-// public function store(Request $request)
-// {
-//     //
-// }
 
-/**
- * Display the specified resource.
- */
-// public function show(Admin $admin)
-// {
-//     //
-// }
-
-/**
- * Show the form for editing the specified resource.
- */
-// public function edit(Admin $admin)
-// {
-//     //
-// }
-
-/**
- * Update the specified resource in storage.
- */
-// public function update(Request $request, Admin $admin)
-// {
-//     //
-// }
-
-/**
- * Remove the specified resource from storage.
- */
-    // public function destroy(Admin $admin)
-    // {
-    //     //
-    // }

@@ -17,7 +17,8 @@ class Course extends Model
     }
     public function students()
     {
-        return $this->belongsToMany(Student::class, "enrollments", "course_id", "user_id");
+        return $this->belongsToMany(Student::class, "enrollments", "course_id", "user_id")
+            ->withPivot('enrollment_date', 'is_completed', 'completed_date');
     }
 
     public function lessons()

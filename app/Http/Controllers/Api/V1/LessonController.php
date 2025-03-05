@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Http\Resources\LessonCollection;
+use App\Http\Resources\LessonResource;
+use App\Models\Course;
 use App\Models\Lesson;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -12,46 +15,43 @@ class LessonController extends Controller
 {
     /**
      *  Get all lessons
-     *  get - /api/lessons
+     *  get - /api/courses/:id/lessons
+     *  @param ( course_id )
      */
-    public function index()
+    public function index(Course $course)
     {
-        $lessons = Lesson::latest()->get();
+        $lessons = $course->lessons;
 
         if (!$lessons) {
             return response()->json([
-                "message" => "Lesson not found."
-            ]);
+                "message" => "Lessons not found."
+            ],404);
         }
 
         return response()->json([
             "message" => "Lessons retrieved successfully.",
             "datas" => [
-                'lessons' => $lessons
+                'lessons' => new LessonCollection($lessons)
             ],
-            "status" => 200
         ], 200);
     }
 
     /**
      *  get lesson
-     *  get - /api/lessons/:id
-     *  @param id
+     *  get - /api/courses/:id/lessons/:id
+     *  @param ( course_id , lesson_id )
      */
-    public function show($id){
-        $lesson = Lesson::find($id);
-
-        if (!$lesson) {
+    public function show(Course $course,Lesson $lesson){
+        if ($course->id !== $lesson->course_id) {
             return response()->json([
-                "message" => "Lesson not found.",
-                "status" => 404
-            ], 404);
+                'message' => "Lesson not found in the $course->course_name course"
+            ],404);
         }
 
         return response()->json([
             'message' => "Lesson retrieved successfully.",
             'data' => [
-                "lesson" => $lesson
+                "lesson" => new LessonResource($lesson)
             ],
             'status' => 200
         ],200);
@@ -59,67 +59,59 @@ class LessonController extends Controller
 
     /**
      *  store lesson
-     *  post - /api/lessons
-     *  @param - course_id, title, lesson_detail, is_available , ( video_url - get from uploadUrl Api )
+     *  post - /api/courses/:id/lessons/
+     *  @param - title, lesson_detail, is_available, ( video_url - get from uploadUrl Api )
      */
-    public function store(LessonRequest $lessonRequest)
+    public function store(LessonRequest $lessonRequest,Course $course)
     {
-        $attributes = $lessonRequest->validated();
+        $validated = $lessonRequest->validated();
 
-        $lesson = Lesson::create($attributes);
+        $lesson = $course->lessons()->create($validated);
 
         return response()->json([
             'message' => 'Lesson created successfully.',
             'data' => [
-                'lesson' => $lesson
+                'lesson' => new LessonResource($lesson)
             ],
-            'status' => 201
         ], 201);
     }
 
     /**
      *  update lesson
-     *  put - /api/lessons/:id
-     * @param id
-     * @param request
+     *  put - /api/courses/:id/lessons/:id
+     * @param ( course_id , lesson_id )
+     * @param request,( course_id - optional )
      */
-    public function update(LessonRequest $lessonRequest,$id)
+    public function update(LessonRequest $lessonRequest,Course $course,Lesson $lesson)
     {
-        $lesson = Lesson::find($id);
-
-        if (!$lesson) {
+        if ($course->id !== $lesson->course_id) {
             return response()->json([
-                "message" => "Lesson not found.",
-                "status" => 404
+                'message' => "Lesson not found in the $course->course_name course"
             ], 404);
         }
+        $validated = $lessonRequest->validated();
 
-        $attributes = $lessonRequest->validated();
-
-        $lesson->update($attributes);
+        $lesson->update($validated);
 
         return response()->json([
             "message" => "update successfully",
             "data" => [
-                'lesson' => $lesson
+                'lesson' => new LessonResource($lesson)
             ],
-            
+
         ],200);
     }
 
     /**
      *  delete lesson
-     *  delete - /api/lessons/:id
-     * @param id
+     *  delete - /api/courses/:id/lessons/:id
+     * @param ( course_id , lesson_id )
      */
-    public function destroy($id)
+    public function destroy(Course $course, Lesson $lesson)
     {
-        $lesson = Lesson::find($id);
-
-        if (!$lesson) {
+        if ($course->id !== $lesson->course_id) {
             return response()->json([
-                "message" => "Lesson not found.",
-                "status" => 404
+                'message' => "Lesson not found in the $course->course_name course"
             ], 404);
         }
 
@@ -127,14 +119,13 @@ class LessonController extends Controller
 
         return response()->json([
             "message" => "Lesson delete successfully.",
-            "status" => 200
         ],200);
     }
 
     /**
      *  video upload
      *  post - /api/lessons/uploadUrl
-     * @param video type - mp4, mov, avi, wmv, flv, or webm.
+     * @param ( video ) type - mp4, mov, avi, wmv, flv, or webm.
      */
 
     public function uploadUrl(LessonUploadVideoRequest $uploadVideoRequest)
