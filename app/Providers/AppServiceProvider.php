@@ -9,7 +9,9 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
- 
+    protected $policies = [
+        Course::class => CoursePolicy::class,
+    ];
     /**
      * Register any application services.
      */
@@ -21,9 +23,6 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
-    {
-        //
-
+    public function boot(): void {
     }
 }

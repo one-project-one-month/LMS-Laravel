@@ -9,22 +9,29 @@ use App\Http\Resources\CourseResource;
 use App\Jobs\RequestCreateCourse;
 use App\Mail\CourseCreated;
 use App\Models\Course;
-use App\Models\Instructor;
 use Exception;
-use GuzzleHttp\Psr7\Message;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rules\Can;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class CourseController extends Controller
 {
+
+    // public function test()
+    // {
+
+
+    //     if (Gate::allows("createCourse",Course::class)) {
+    //         return "allows";
+    //     } else {
+    //         return "no allows";
+    //     }
+    // }
     //set student for complement 
     //* all done
     public function complete(Request $request, Course $course)
@@ -92,31 +99,37 @@ class CourseController extends Controller
      *  @param - instructor_id, course_name, thumbnail, type, level, description, duration, original_price, current_price, category_id
      */
 
-    //* doing
+    //* done
     public function store(CourseRequest $courseRequest)
     {
-    return "store";
-        // try {
-        //     $data = Arr::except($courseRequest->validated(), ["thumbnail"]);
-        //     $image = Arr::only($courseRequest->validated(), ['thumbnail']);
-        //     $user = JWTAuth::parseToken()->authenticate();
-        //     $id = $user->instructor->id;
+        try {
+            $data = Arr::except($courseRequest->validated(), ["thumbnail"]);
+            $image = Arr::only($courseRequest->validated(), ['thumbnail']);
+            $user = JWTAuth::parseToken()->authenticate();
+            $id = $user->instructor->id;
 
-        //     // Get the uploaded file from the 'thumbnail' key
-        //     $file = $image['thumbnail'];
-        //     $path = $file->storeAs('thumbnails', time() . "$" . $user->id  .  Str::snake($data["course_name"])  . "." . $file->getClientOriginalExtension(), 'public');
-        //     // $imageUrl = asset('storage/' . $path);
-        //     // $imageUrl = url(Storage::url($path));
-        //     // $data["thumbnail"] = $imageUrl;
+            // Get the uploaded file from the 'thumbnail' key
+            $file = $image['thumbnail'];
+            try {
+                $path = $file->storeAs('thumbnails', time() . "$" . $user->id  .  Str::snake($data["course_name"])  . "." . $file->getClientOriginalExtension(), 'public');
+            } catch (Exception $e) {
+                return response()->json([
+                    "error" => $e->getMessage()
+                ]);
+            }
+            // $imageUrl = asset('storage/' . $path);
+            // $imageUrl = url(Storage::url($path));
+            // $data["thumbnail"] = $imageUrl;
 
-        //     $course = Course::create(array_merge($data, ["thumbnail" => $path], ["instructor_id" => $id]));
+            $course = Course::create(array_merge($data, ["thumbnail" => $path], ["instructor_id" => $id]));
 
-        //     return CourseResource::make($course)->additional(["message" => "Course Created Successfully"])->response()->setStatusCode(201);
-        // } catch (Exception $e) {
-        //     return response()->json([
-        //         "error" => $e->getMessage()
-        //     ]);
-        // }
+            return CourseResource::make($course)->additional(["message" => "Course Created Successfully"])->response()->setStatusCode(201);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => "Creating Course Failed",
+                "error" => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

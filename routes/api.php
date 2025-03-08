@@ -15,12 +15,13 @@ use App\Mail\CourseCreated;
 use App\Models\Course;
 use App\Models\Instructor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\Rules\Can;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
-Route::get('/test', function (Request $request) {
-    return $request->user();
-})->middleware("jwt.auth");
+// Route::get('/test', [CourseController::class , "test"])->middleware("jwt.auth");
 
 
 Route::post("/auth/register", [AuthController::class, "register"]);
@@ -46,8 +47,8 @@ Route::post('/categories', [CategoryController::class, 'store']);
 // courses api
 Route::get("/courses", [CourseController::class, "index"]);
 Route::get("/courses/{course}", [CourseController::class, "show"]);
-
 Route::post("/courses", [CourseController::class, "store"])->middleware(["jwt.auth", "instructor"]);
+
 Route::put("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
 Route::patch("/courses/publish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "admin"]);
 Route::patch("/courses/unpublish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "can:update,course"]);

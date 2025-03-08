@@ -5,6 +5,8 @@ namespace App\Policies;
 use App\Models\Course;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Http\Request;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class CoursePolicy
 {
@@ -28,14 +30,21 @@ class CoursePolicy
 
     public function course_details(User $user, Course $course): bool
     {
-        return (($user->role_id === get_role_id("instructor") && $user->instructor->id === $course->instructor_id)) or $user->role_id === get_role_id("admin");
+        // return (($user->role_id === get_role_id("instructor") && $user->instructor->id === $course->instructor_id)) or $user->role_id === get_role_id("admin");
+        return $user->role_id === get_role_id("instructor");
+    }
+
+    public function createCourse(User $user)
+    {
+
+        return is_("instructor");
     }
 
 
     /**
      * Determine whether the user can create models.
      */
- 
+
 
     /**
      * Determine whether the user can update the model.
