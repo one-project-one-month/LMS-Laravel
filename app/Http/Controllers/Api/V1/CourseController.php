@@ -176,8 +176,6 @@ class CourseController extends Controller
             $course->update(["thumbnail" => $path]);
             return response()->json([
                 "message" => "Course thumbnail updated successfully.",
-
-
             ], 200);
         }
     }
@@ -247,6 +245,7 @@ class CourseController extends Controller
                 $student =  $user->student;
                 $isEnrolled = is_enrolled($student->id, $course->id);
             }
+
 
             if ($isEnrolled or Gate::allows("course_details", $course)) {
                 $result = Course::with(["lessons" => function ($query) use ($course) {
