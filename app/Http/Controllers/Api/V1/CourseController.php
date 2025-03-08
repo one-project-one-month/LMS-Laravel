@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CourseRequest;
+use App\Http\Resources\CourseCollection;
 use App\Http\Resources\CourseResource;
 use App\Jobs\RequestCreateCourse;
 use App\Mail\CourseCreated;
@@ -24,7 +25,8 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class CourseController extends Controller
 {
-
+    //set student for complement 
+    //* all done
     public function complete(Request $request, Course $course)
     {
 
@@ -35,15 +37,11 @@ class CourseController extends Controller
                 "user_id" => "required|exists:students,id",
             ]);
             if (is_enrolled($attributes["user_id"], $course->id)) {
-                if (Gate::allows("complete", $course)) {
+                if (Gate::allows("completeCourse", $course)) {
                     DB::table('enrollments')->where("user_id", $attributes["user_id"])->where("course_id", $course->id)->update(["is_completed" => true]);
                     return response()->json([
                         "message" =>  "success 🎉",
                     ]);
-                } else {
-                    return response()->json([
-                        "message" => "you are not unauthorize "
-                    ], 403);
                 }
             } else {
                 return response()->json([
@@ -56,17 +54,22 @@ class CourseController extends Controller
             ], 500);
         }
     }
+
+
     /**
      *  Get all courses
      *  get - /api/courses
      */
+    //* done 
     public function index(Request $request)
     {
         try {
-            $query = Course::query()->filter(request());
-            $validSortColumns = ['id', 'price', 'created_at'];
+            $query = Course::query()->filter(request())->with(["instructorUser" => function ($query) {
+                $query->select("users.id", "users.username", "users.profile_photo", "instructors.edu_background");
+            }, "category:id,name"]);
+            $validSortColumns = ['id', 'current_price', 'created_at'];
             $sortBy = in_array($request->input("sort_by"), $validSortColumns, true) ? $request->input("sort_by") : "id";
-            $sortDirection = in_array($request->input("sort_direction"), $validSortColumns, true) ? $request->input("sort_direction") : "desc";
+            $sortDirection =   $request->input("sort_direction") ?? "desc";
             $query->orderBy($sortBy, $sortDirection);
 
             $limit = $request->input("limit", 10);
@@ -74,13 +77,7 @@ class CourseController extends Controller
             $courses = $query->paginate($limit);
 
 
-            return response()->json([
-                "message" => "Courses retrieved successfully.",
-                "data" => [
-                    "courses" => $courses
-                ],
-
-            ], 200);
+            return  new CourseCollection($courses);
         } catch (\Exception $e) {
             return response()->json([
                 "message" => "failed to load courses",
@@ -94,29 +91,32 @@ class CourseController extends Controller
      *  post - /api/courses
      *  @param - instructor_id, course_name, thumbnail, type, level, description, duration, original_price, current_price, category_id
      */
+
+    //* doing
     public function store(CourseRequest $courseRequest)
     {
-        $data = Arr::except($courseRequest->validated(), ["thumbnail"]);
-        $image = Arr::only($courseRequest->validated(), ['thumbnail']);
-        $user = JWTAuth::parseToken()->authenticate();
-        $id = $user->instructor->id;
+    return "store";
+        // try {
+        //     $data = Arr::except($courseRequest->validated(), ["thumbnail"]);
+        //     $image = Arr::only($courseRequest->validated(), ['thumbnail']);
+        //     $user = JWTAuth::parseToken()->authenticate();
+        //     $id = $user->instructor->id;
 
-        // Get the uploaded file from the 'thumbnail' key
-        $file = $image['thumbnail'];
-        $path = $file->storeAs('thumbnails', time() . "$" . $user->id  .  Str::snake($data["course_name"])  . "." . $file->getClientOriginalExtension(), 'public');
-        // $imageUrl = asset('storage/' . $path);
-        // $imageUrl = url(Storage::url($path));
-        // $data["thumbnail"] = $imageUrl;
+        //     // Get the uploaded file from the 'thumbnail' key
+        //     $file = $image['thumbnail'];
+        //     $path = $file->storeAs('thumbnails', time() . "$" . $user->id  .  Str::snake($data["course_name"])  . "." . $file->getClientOriginalExtension(), 'public');
+        //     // $imageUrl = asset('storage/' . $path);
+        //     // $imageUrl = url(Storage::url($path));
+        //     // $data["thumbnail"] = $imageUrl;
 
-        $course = Course::create(array_merge($data, ["thumbnail" => $path], ["instructor_id" => $id]));
+        //     $course = Course::create(array_merge($data, ["thumbnail" => $path], ["instructor_id" => $id]));
 
-        return response()->json([
-            "message" => "Course created successfully.",
-            "data" => [
-                "course" => $course
-            ],
-
-        ], 201);
+        //     return CourseResource::make($course)->additional(["message" => "Course Created Successfully"])->response()->setStatusCode(201);
+        // } catch (Exception $e) {
+        //     return response()->json([
+        //         "error" => $e->getMessage()
+        //     ]);
+        // }
     }
 
     /**
@@ -238,37 +238,33 @@ class CourseController extends Controller
     {
         $user = JWTAuth::parseToken()->authenticate();
         $isEnrolled = false;
+        if (is_("student")) {
 
+            $student =  $user->student;
+            $isEnrolled = is_enrolled($student->id, $course->id);
+        }
 
-        if (is_("student") or Gate::allows("course_details", $course)) {
-            if (is_("student")) {
-                $student =  $user->student;
-                $isEnrolled = is_enrolled($student->id, $course->id);
-            }
-
-
-            if ($isEnrolled or Gate::allows("course_details", $course)) {
-                $result = Course::with(["lessons" => function ($query) use ($course) {
-                    $query->where("is_available", true);
-                }, "social_link:course_id,facebook,x,phone,telegram,email", "category:id,name", "instructorUser" => function ($query) {
-                    $query->select("users.id", "users.username", "users.profile_photo", "instructors.edu_background");
-                }])->where("is_available", true)->findOrFail($course->id);
-
-                return CourseResource::make($result);
-            }
+        if ($isEnrolled or Gate::allows("course_details", $course)) {
+            $result = Course::with(["lessons" => function ($query) use ($course) {
+                $query->where("is_available", true);
+            }, "social_link:course_id,facebook,x,phone,telegram,email", "category:id,name", "instructorUser" => function ($query) {
+                $query->select("users.id", "users.username", "users.profile_photo", "instructors.edu_background");
+            }, "category:id,name"])->where("is_available", true)->findOrFail($course->id);
+            return CourseResource::make($result)->additional(["message" => "course retrieve successfully🎉"]);
         } else {
             // no account state
-            $result = Course::with(['lessons' => function ($query) {
-                $query->select("title", "course_id")->where("is_available", true);
-            }])->find($course->id);
+
+            $result = Course::with([
+                'lessons' => function ($query) {
+                    $query->select("title", "course_id", "id", "lesson_detail")->where("is_available", true);
+                },
+                "instructorUser" => function ($query) {
+                    $query->select("users.id", "users.username", "users.profile_photo", "instructors.edu_background");
+                }
+            ])->where("is_available", true)->findOrFail($course->id);
 
 
-            return response()->json([
-                "message" => "success",
-                "data" => [
-                    "course" => $result
-                ]
-            ]);
+            return CourseResource::make($result);
         }
     }
     public function requestAdmin(Course $course)
