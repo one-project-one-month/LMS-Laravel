@@ -23,7 +23,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(RoleSeeder::class);
-        $this->call(LessonSeeder::class);
 
         try {
             Admin::create([
@@ -41,5 +40,7 @@ class DatabaseSeeder extends Seeder
 
         Category::factory(3)->create();
         Course::factory(4)->create();
+        $this->call(LessonSeeder::class);
+        
     }
 }

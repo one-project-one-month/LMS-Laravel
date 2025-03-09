@@ -28,17 +28,9 @@ class CoursePolicy
         return true;
     }
 
-    public function course_details(User $user, Course $course): bool
-    {
-        // return (($user->role_id === get_role_id("instructor") && $user->instructor->id === $course->instructor_id)) or $user->role_id === get_role_id("admin");
-        return $user->role_id === get_role_id("instructor");
-    }
 
-    public function createCourse(User $user)
-    {
 
-        return is_("instructor");
-    }
+
 
 
     /**
@@ -50,6 +42,14 @@ class CoursePolicy
      * Determine whether the user can update the model.
      */
     public function update(User $user, Course $course): bool
+    {
+        if (is_("instructor") or is_("admin")) {
+            return ($user->instructor->id === $course->instructor_id) or is_("admin");
+        } else {
+            return false;
+        }
+    }
+    public function course_details(User $user, Course $course): bool
     {
         if (is_("instructor") or is_("admin")) {
             return ($user->instructor->id === $course->instructor_id) or is_("admin");
@@ -73,11 +73,12 @@ class CoursePolicy
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, Course $course): bool
+
     {
-        return $user->instructor->id === $course->instructor_id  or is_("admin");
-    }
-    public function publish()
-    {
-        return is_("admin");
+        if (is_("instructor") or is_("admin")) {
+            return ($user->instructor->id === $course->instructor_id) or is_("admin");
+        } else {
+            return false;
+        }
     }
 }

@@ -19,7 +19,7 @@ class AdminMiddleware
             return $next($request);
         } else {
             return response()->json([
-                "message" => "You are not authorized to suspend a user.",
+                "message" => "You are not admin to do this action .",
 
             ], 403);
         }

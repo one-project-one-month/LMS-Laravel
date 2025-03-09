@@ -10,6 +10,7 @@ use App\Jobs\RequestCreateCourse;
 use App\Mail\CourseCreated;
 use App\Models\Course;
 use Exception;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use PhpParser\Node\Stmt\TryCatch;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class CourseController extends Controller
@@ -138,31 +141,30 @@ class CourseController extends Controller
      *  @param id
      *  @param request
      */
+    //*done
     public function update(CourseRequest $courseRequest, Course $course)
     {
-        $attributes = $courseRequest->validated();
-        if ($attributes["thumbnail"]) {
-            $attributes = Arr::except($attributes, "thumbnail");
-        }
-        // need to fill photo update
+        try {
+            $attributes = $courseRequest->validated();
+            //! disable photo update
+            if (key_exists("thumbnail", $attributes)) {
 
-        if (!$course) {
+                $attributes = Arr::except($attributes, "thumbnail");
+            }
+
+            $course->update($attributes);
+
+
+
+            return CourseResource::make($course)->additional(["message" => "Course update successfully"]);
+        } catch (Exception $e) {
             return response()->json([
-                'message' => "Course not found.",
-                "status" => 404
-            ], 404);
+                "message" => "something was wrong",
+                "error" => $e->getMessage()
+            ]);
         }
-
-        $course->update($attributes);
-
-        return response()->json([
-            "message" => "Course updated successfully.",
-            "data" => [
-                "courses" => $course
-            ],
-            "status" => 200
-        ], 200);
     }
+    //*done
     public function updateThumbnail(Request $request, Course $course)
     {
 
@@ -175,48 +177,38 @@ class CourseController extends Controller
             ],
         ]);
 
-
-
         $image = $attr["thumbnail"];
 
         $oldPath = str_replace("/", "\\", $course->thumbnail);
         if (File::exists(public_path("storage\\" . $oldPath))) {
             File::delete(public_path("storage\\" . $oldPath));
-            return "File deleted successfully!";
-        } else {
-
-            $path = $image->storeAs('thumbnails', time() . "$" . auth()->id()  .  Str::snake($course->course_name)  . "." . $image->getClientOriginalExtension(), 'public');
-            $course->update(["thumbnail" => $path]);
-            return response()->json([
-                "message" => "Course thumbnail updated successfully.",
-            ], 200);
         }
+
+        $path = $image->storeAs('thumbnails', time() . "$" . auth()->id()  .  Str::snake($course->course_name)  . "." . $image->getClientOriginalExtension(), 'public');
+        $course->update(["thumbnail" => $path]);
+        return response()->json([
+            "message" => "Course thumbnail updated successfully.",
+        ], 200);
     }
+    //*done
+
     public function publish(Request $request, Course $course)
     {
-
-
-        if (!$course) {
-            return response()->json([
-                'message' => "Course not found.",
-
-            ], 404);
-        }
+        $attr = $request->validate([
+            "is_available" => "boolean"
+        ]);
         try {
-            if ($course->is_available === true) {
 
-                $course->update(["is_available" => false]);
+            if ($attr["is_available"]) {
+                $course->update(["is_available" => $attr["is_available"]]);
+
                 return response()->json([
-                    'message' => "Course  unpublished successfully.",
+                    'message' => "Course  publish successfully.",
 
-                ], 400);
+                ], 200);
+            } else {
+                throw new BadRequestException("Publish request must be true");
             }
-            $course->update(["is_available" => true]);
-
-            return response()->json([
-                "message" => "Course published successfully.",
-
-            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 "message" => "failed to publish course",
@@ -224,29 +216,58 @@ class CourseController extends Controller
             ], 400);
         }
     }
+    //*done
+    public function unpublish(Request $request, Course $course)
+    {
+        $attr = $request->validate([
+            "is_available" => "boolean"
+        ]);
+        return $attr["is_available"];
+        try {
 
+            if (!$attr["is_available"]) {
+                $course->update(["is_available" => $attr["is_available"]]);
+
+                return response()->json([
+                    'message' => "Course  unpublish successfully.",
+
+                ], 200);
+            } else {
+                throw new BadRequestException("Unpublish request must be false");
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => "failed to unpublish course",
+                "error" => $e->getMessage(),
+            ], 400);
+        }
+    }
     /**
      *  delete course
      *  delete - /api/courses/:id
      * @param id
      * @param request
      */
-    public function destroy($id)
+    //*done
+    public function destroy(Course $course)
     {
-        $course = Course::find($id);
-        if (!$course) {
-            return response()->json([
-                'message' => "Course not found.",
-                "status" => 404
-            ], 404);
-        }
-        $course->delete();
+        try {
 
-        return response()->json([
-            "message" => "delete successfully",
-            "status" => 200
-        ], 200);
+            $course->delete();
+            return response()->json([
+                "message" => "delete successfully",
+
+            ], 200);
+        } catch (QueryException $e) {
+            return response()->json([
+                "message" => "Failed to delete course",
+                "error" => $e->getMessage()
+
+            ], 500);
+        }
     }
+
+    //*done
     public function show(Course $course)
     {
         $user = JWTAuth::parseToken()->authenticate();
@@ -258,6 +279,7 @@ class CourseController extends Controller
         }
 
         if ($isEnrolled or Gate::allows("course_details", $course)) {
+
             $result = Course::with(["lessons" => function ($query) use ($course) {
                 $query->where("is_available", true);
             }, "social_link:course_id,facebook,x,phone,telegram,email", "category:id,name", "instructorUser" => function ($query) {
@@ -273,16 +295,18 @@ class CourseController extends Controller
                 },
                 "instructorUser" => function ($query) {
                     $query->select("users.id", "users.username", "users.profile_photo", "instructors.edu_background");
-                }
+                },
+                "category:id,name"
             ])->where("is_available", true)->findOrFail($course->id);
 
-
-            return CourseResource::make($result);
+            return CourseResource::make($result)->additional(["message" => "course retrieve successfully🎉"]);
         }
     }
+
+    //*done
     public function requestAdmin(Course $course)
     {
-        RequestCreateCourse::dispatch(new CourseCreated($course));
+        RequestCreateCourse::dispatch($course);
         return response()->json([
             "message" => "Successfully request to publish your course"
         ]);

@@ -50,13 +50,13 @@ Route::get("/courses/{course}", [CourseController::class, "show"]);
 Route::post("/courses", [CourseController::class, "store"])->middleware(["jwt.auth", "instructor"]);
 
 Route::put("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
-Route::patch("/courses/publish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "admin"]);
-Route::patch("/courses/unpublish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "can:update,course"]);
+Route::patch("/courses/publish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth" ,"admin" ]);
+Route::patch("/courses/unpublish/{course}", [CourseController::class, "unpublish"])->middleware(["jwt.auth", "can:update,course"]);
 Route::patch("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
-Route::post("/courses/{course}/thumbnail", [CourseController::class, "updateThumbnail"])->middleware(["jwt.auth"]);
-Route::delete("/courses/{id}", [CourseController::class, "destroy"])->middleware(["jwt.auth", "can:delete,course"]);
+Route::post("/courses/{course}/thumbnail", [CourseController::class, "updateThumbnail"])->middleware(["jwt.auth" ,"can:update,course"]);
+Route::delete("/courses/{course}", [CourseController::class, "destroy"])->middleware(["jwt.auth", "can:delete,course"]);
 Route::patch("/courses/{course}/complete", [CourseController::class, "complete"])->middleware(["jwt.auth", "can:completeCourse,course"]);
-Route::get("/courses/{course}/request", [CourseController::class, "request"])->middleware("jwt.auth", "can:update,course");
+Route::get("/courses/{course}/request", [CourseController::class, "requestAdmin"])->middleware("jwt.auth","can:update,course");
 
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::put('/categories/{id}', [CategoryController::class, 'update']);

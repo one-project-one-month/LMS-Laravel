@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('social_links', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Course::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Course::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('facebook')->nullable();
             $table->string('x')->nullable();
             $table->string('telegram')->nullable();
