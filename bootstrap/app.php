@@ -28,7 +28,6 @@ return Application::configure(basePath: dirname(__DIR__))
         });
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->is("api/courses/*")) {
-
                 return response()->json([
                     "message" => "Course is Not found",
                     "error" => $e->getMessage()
@@ -53,10 +52,15 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 404);
             }
 
-            return response()->json([
-                "message" => "Resource not found",
-                "error" => $e->getMessage()
-            ], 404);
+            // return response()->json([
+            //     "message" => "Resource not found",
+            //     "error" => $e->getMessage()
+            // ], 404);
         });
-        //
+        // $exceptions->render(function (LessonNotFoundException $e, Request $request) {
+        //     return response()->json([
+        //         "message" => "Lesson is Not found",
+        //         "error" => $e->getMessage()
+        //     ], 404);
+        // });
     })->create();

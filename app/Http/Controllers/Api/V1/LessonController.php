@@ -2,38 +2,38 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Resources\LessonCollection;
-use App\Http\Resources\LessonResource;
+use App\Interfaces\LessonInterface;
 use App\Models\Course;
 use App\Models\Lesson;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LessonRequest;
+use App\Http\Resources\LessonResource;
+use App\Http\Resources\LessonCollection;
 use App\Http\Requests\LessonUploadVideoRequest;
+use App\Repositories\LessonRepository;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class LessonController extends Controller
 {
+    public function __construct(protected LessonInterface $lessonInterface)
+    {
+
+    }
     /**
      *  Get all lessons
      *  get - /api/courses/:id/lessons
      *  @param ( course_id )
      */
-    public function index(Course $course)
+    public function index(int $id)
     {
-        $lessons = $course->lessons;
+        $lessons = $this->lessonInterface->all($id);
 
-        if (!$lessons) {
-            return response()->json([
-                "message" => "Lessons not found."
-            ],404);
+        if ($lessons->isEmpty()) {
+            return errorResponse("Lessons not found.", 400);
         }
 
-        return response()->json([
-            "message" => "Lessons retrieved successfully.",
-            "datas" => [
-                'lessons' => new LessonCollection($lessons)
-            ],
-        ], 200);
+        return successResponse("Lessons retrieved successfully.", new LessonCollection($lessons), 200);
     }
 
     /**
@@ -41,28 +41,11 @@ class LessonController extends Controller
      *  get - /api/courses/:id/lessons/:id
      *  @param ( course_id , lesson_id )
      */
-
-    public function show($id)
+    public function show(int $courseId,int $lessonId)
     {
-        $lesson = Lesson::find($id);
+        $lesson = $this->lessonInterface->show($courseId, $lessonId);
 
-
-
-
-        if ($course->id !== $lesson->course_id) {
-
-            return response()->json([
-                'message' => "Lesson not found in the $course->course_name course"
-            ],404);
-        }
-
-        return response()->json([
-            'message' => "Lesson retrieved successfully.",
-            'data' => [
-                "lesson" => new LessonResource($lesson)
-            ],
-            'status' => 200
-        ], 200);
+        return successResponse("Lesson retrieved successfully.", new LessonResource($lesson));
     }
 
     /**
@@ -70,18 +53,13 @@ class LessonController extends Controller
      *  post - /api/courses/:id/lessons/
      *  @param - title, lesson_detail, is_available, ( video_url - get from uploadUrl Api )
      */
-    public function store(LessonRequest $lessonRequest,Course $course)
+    public function store(LessonRequest $lessonRequest,int $courseId)
     {
-        $validated = $lessonRequest->validated();
+        $attributes = $lessonRequest->validated();
 
-        $lesson = $course->lessons()->create($validated);
+        $lesson = $this->lessonInterface->create($attributes,$courseId);
 
-        return response()->json([
-            'message' => 'Lesson created successfully.',
-            'data' => [
-                'lesson' => new LessonResource($lesson)
-            ],
-        ], 201);
+        return successResponse("Lesson created successfully.", new LessonResource($lesson),201);
     }
 
     /**
@@ -91,80 +69,35 @@ class LessonController extends Controller
      * @param request,( course_id - optional )
      */
 
-    public function update(LessonRequest $lessonRequest,Course $course,Lesson $lesson)
+    public function update(LessonRequest $lessonRequest,int $courseId,int $lessonId)
 
     {
-        if ($course->id !== $lesson->course_id) {
-            return response()->json([
-                'message' => "Lesson not found in the $course->course_name course"
-            ], 404);
-        }
-        $validated = $lessonRequest->validated();
+        $attributes = $lessonRequest->validated();
 
-        $lesson->update($validated);
+        $lesson = $this->lessonInterface->update($attributes,$courseId,$lessonId);
 
-        return response()->json([
-            "message" => "update successfully",
-            "data" => [
-                'lesson' => new LessonResource($lesson)
-            ],
-
-
-        ], 200);
-
+        return successResponse("Lesson updated successfully.", new LessonResource($lesson));
     }
 
-    public function publish(Request $request, Lesson $lesson)
-    {
-
-        if (!$lesson) {
-            return response()->json([
-                'message' => "Lesson not found.",
-
-            ], 404);
-        }
-        try {
-            if ($lesson->is_available === true) {
-
-                $lesson->update(["is_available" => false]);
-                return response()->json([
-                    'message' => "Lesson  unpublished successfully.",
-
-                ], 400);
-            }
-            $lesson->update(["is_available" => true]);
-
-            return response()->json([
-                "message" => "Lesson published successfully.",
-
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                "message" => "failed to publish course",
-                "error" => $e->getMessage(),
-            ], 400);
-        }
-    }
     /**
      *  delete lesson
      *  delete - /api/courses/:id/lessons/:id
      * @param ( course_id , lesson_id )
      */
-    public function destroy(Course $course, Lesson $lesson)
+    public function destroy(int $courseId, int $lessonId)
     {
-        if ($course->id !== $lesson->course_id) {
-            return response()->json([
-                'message' => "Lesson not found in the $course->course_name course"
-            ], 404);
-        }
+        $this->lessonInterface->delete($courseId, $lessonId);
 
-        $lesson->delete();
+        return successResponse("Lesson deleted successfully.");
+    }
 
-        return response()->json([
-            "message" => "Lesson delete successfully.",
+    // toggle publish
+    // patch - api/v1/courses/:id/lessons/:id/togglePublish
+    public function publish(int $courseId, int $lessonId)
+    {
+        $lesson = $this->lessonInterface->togglePublish($courseId, $lessonId);
 
-        ], 200);
-
+        return successResponse("$lesson->title publish status has been changed.", new LessonResource($lesson));
     }
 
     /**
@@ -181,7 +114,8 @@ class LessonController extends Controller
         return response()->json([
             'message' => 'Video uploaded successfully',
             'path' => $path,
-            'status' => 200
         ], 200);
     }
+
+
 }

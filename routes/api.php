@@ -67,20 +67,12 @@ Route::post("/unroll/{course}", [EnrollmentController::class, "unroll"])->middle
 
 
 // lesson api
-
-Route::get('/lessons', [LessonController::class, 'index']);
-Route::get('/lessons/{id}', [LessonController::class, 'show'])->middleware('jwt.auth', 'can:view,lesson');;
-Route::post('/lessons', [LessonController::class, 'store'])->middleware('jwt.auth', 'can:create,lesson');
-Route::put('/lessons/{id}', [LessonController::class, 'update'])->middleware('jwt.auth', 'can:update,lesson');
-Route::patch('/lessons/publish/{lesson}', [LessonController::class, 'publish'])->middleware('jwt.auth', 'can:update,lesson');
-Route::patch('/lessons/unpublish/{lesson}', [LessonController::class, 'publish'])->middleware('jwt.auth', 'can:update,lesson');
-Route::delete('/lessons/{id}', [LessonController::class, 'destroy'])->middleware('jwt.auth', 'can:delete,lesson');
-
-Route::get('/courses/{course}/lessons', [LessonController::class, 'index']);
-Route::get('/courses/{course}/lessons/{lesson}', [LessonController::class, 'show'])->middleware('jwt.auth', 'can:view,lesson');
-Route::post('/courses/{course}/lessons', [LessonController::class, 'store'])->middleware('jwt.auth', 'can:create,lesson');
-Route::put('/courses/{course}/lessons/{lesson}', [LessonController::class, 'update'])->middleware('jwt.auth', 'can:update,lesson');
-Route::delete('/courses/{course}/lessons/{lesson}', [LessonController::class, 'destroy'])->middleware('jwt.auth', 'can:delete,lesson');
+Route::get('/courses/{id}/lessons', [LessonController::class, 'index']);
+Route::get('/courses/{courseId}/lessons/{lessonId}', [LessonController::class, 'show'])->middleware('jwt.auth', 'can:show,lesson');
+Route::post('/courses/{courseId}/lessons', [LessonController::class, 'store'])->middleware('jwt.auth', 'can:create,lesson');
+Route::put('/courses/{courseId}/lessons/{lessonId}', [LessonController::class, 'update'])->middleware('jwt.auth', 'can:update,lesson');
+Route::delete('/courses/{courseId}/lessons/{lessonId}', [LessonController::class, 'destroy'])->middleware('jwt.auth', 'can:delete,lesson');
+Route::patch('/courses/{courseId}/lessons/{lessonId}/togglePublish', [LessonController::class, 'publish'])->middleware('jwt.auth', 'can:update,lesson');
 
 Route::post('/lessons/uploadUrl', [LessonController::class, 'uploadUrl'])->middleware('jwt.auth', 'can:uploadVideoUrl,lesson');
 

@@ -20,9 +20,7 @@ class LessonResource extends JsonResource
             "title" => $this->title,
             "videoUrl" => $this->when($this->video_url, $this->video_url),
             "lessonDetail" => $this->lesson_detail,
-
-  
-
+            "is_available" => $this->is_available
         ];
     }
 }
