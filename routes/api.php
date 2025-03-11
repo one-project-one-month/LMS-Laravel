@@ -40,8 +40,7 @@ Route::middleware('jwt.auth')->group(function () {
     Route::patch('courses/{course}/social-link', [SocialLinkController::class, 'update']);
 });
 
-Route::get('/categories', [CategoryController::class, 'index']);
-Route::post('/categories', [CategoryController::class, 'store']);
+
 
 // courses api
 Route::get("/courses", [CourseController::class, "index"]);
@@ -56,14 +55,15 @@ Route::delete("/courses/{id}", [CourseController::class, "destroy"])->middleware
 Route::patch("/courses/{course}/complete", [CourseController::class, "complete"])->middleware(["jwt.auth"]);
 Route::get("/courses/{course}/request", [CourseController::class, "request"])->middleware("jwt.auth", "can:update,course");
 
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::post('/categories', [CategoryController::class, 'store']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::put('/categories/{id}', [CategoryController::class, 'update']);
 Route::patch('/categories/{id}', [CategoryController::class, 'update']);
 Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
 
-Route::post("/enroll/{course}", [EnrollmentController::class, "enroll"])->middleware('jwt.auth');
-Route::post("/unroll/{course}", [EnrollmentController::class, "unroll"])->middleware('jwt.auth');
+Route::post("/enroll/{course}", [EnrollmentController::class, "enroll"])->middleware(['jwt.auth', 'isStudent']);
 
 
 // lesson api
@@ -73,8 +73,8 @@ Route::post('/courses/{courseId}/lessons', [LessonController::class, 'store'])->
 Route::put('/courses/{courseId}/lessons/{lessonId}', [LessonController::class, 'update'])->middleware('jwt.auth', 'can:update,lesson');
 Route::delete('/courses/{courseId}/lessons/{lessonId}', [LessonController::class, 'destroy'])->middleware('jwt.auth', 'can:delete,lesson');
 Route::patch('/courses/{courseId}/lessons/{lessonId}/togglePublish', [LessonController::class, 'publish'])->middleware('jwt.auth', 'can:update,lesson');
-
 Route::post('/lessons/uploadUrl', [LessonController::class, 'uploadUrl'])->middleware('jwt.auth', 'can:uploadVideoUrl,lesson');
+
 
 Route::post("/admins/login", [AdminController::class, 'login']);
 Route::post("/admins/create", [AdminController::class, 'create']);

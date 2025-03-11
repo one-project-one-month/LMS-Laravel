@@ -19,6 +19,11 @@ class Student extends Model
                     ->withPivot('enrollment_date', 'is_completed', 'completed_date');
     }
 
+    public function isEnroll($course)
+    {
+        return $this->courses->contains('id', $course->id);
+    }
+
     public function scopeFilter($query, $filter)
     {
 
