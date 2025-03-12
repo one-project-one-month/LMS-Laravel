@@ -10,32 +10,22 @@ use App\Models\Student;
 use App\Models\Instructor;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
+use function PHPSTORM_META\map;
 use Illuminate\Validation\Rule;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Traits\customPaginationFormat;
 use App\Http\Requests\AdminUpdateRequest;
-use App\Http\Resources\CourseStudentsResource;
 use App\Http\Resources\InstructorResource;
-use App\Http\Resources\InstructorCollection;
 
-use function PHPSTORM_META\map;
+use App\Http\Resources\InstructorCollection;
+use App\Http\Resources\CourseStudentsResource;
 
 class AdminController extends Controller
 {
+    use customPaginationFormat;
 
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        $admins = Admin::all();
-        return response()->json([
-            'message' => 'Admins lists are as follows.',
-            'data' => [
-                'admins' => $admins,
-            ]
-        ]);
-    }
     public function login(Request $request)
     {
         try {
@@ -49,9 +39,6 @@ class AdminController extends Controller
                     'message' => 'Invalid credentials',
                 ], 401);
             }
-
-
-
 
             return response()->json([
                 'message' => 'Login successfully as Admin ',
@@ -70,8 +57,6 @@ class AdminController extends Controller
     public function create(Request $request)
     {
         //need to wrap DB:transistion()
-
-
         try {
             $admin_role_id = Role::query()->where("role", "admin")->first()->id;
 
@@ -120,73 +105,90 @@ class AdminController extends Controller
         }
     }
 
+    // get all instructors
     public function getAllInstructors(Request $request)
     {
         $limit = ($request->limit != null && (int) $request->limit <= 100) ? (int) $request->limit : 20;
 
         $instructors = Instructor::latest()->with('user')->paginate($limit);
 
-        if (!$instructors) {
-            return response()->json([
-                'message' => "Instructors not found."
-            ], 404);
+
+        if ($instructors->isEmpty()) {
+            return errorResponse("Instructors not found.");
         }
 
-        return response()->json([
-            'message' => 'Instructors retrieved successfully.',
-            'instructors' => new InstructorCollection($instructors)
-        ], 200);
+        $instructors = $this->paginateFormat(InstructorResource::collection($instructors));
+
+        return successResponse('Instructors retrieved successfully.', $instructors);
     }
 
+    // get all admins
     public function getAllAdmins(Request $request)
     {
         $limit = ($request->limit != null && (int) $request->limit <= 100) ? (int) $request->limit : 20;
 
-        $admins = Admin::latest()->with('user')->paginate($limit);
+        $admins = User::admins()->latest()->paginate($limit);
 
-        if (!$admins) {
-            return response()->json([
-                'message' => "Admins not found."
-            ], 404);
+        if ($admins->isEmpty()) {
+            return errorResponse("Admins not found.");
         }
-        return response()->json([
-            'message' => 'Instructors retrieved successfully.',
-            'admins' => $admins
-        ], 200);
+
+        return successResponse("Admins retrieved successfully.", $this->paginateFormat($admins));
     }
+
+    // get all students
     public function getAllStudents(Request $request)
     {
-        $limit = ($request->limit != null && (int)$request->limit <= 100) ? (int)$request->limit : 20;
+        $limit = ($request->limit != null && (int) $request->limit <= 100) ? (int) $request->limit : 20;
 
-        $students = Student::latest()->with('user')->paginate($limit);
+        $students = User::students()->latest()->paginate($limit);
 
-        if (!$students) {
-            return response()->json([
-                'message' => "Students not found."
-            ], 404);
+        if ($students->isEmpty()) {
+            return errorResponse("Students not found.");
         }
-        return response()->json([
-            'message' => 'Instructors retrieved successfully.',
-            'students' => $students
-        ], 200);
+
+        return successResponse('Students retrieved successfully.', $this->paginateFormat($students));
     }
 
-    public function getStudentsFromCourse(Course $course,Request $request)
+    // get courses
+    public function getCourses(Request $request)
     {
-        $is_completed = $request->is_completed != null ? filter_var($request->is_completed, FILTER_VALIDATE_BOOLEAN) : false;
+        $limit = ($request->limit != null && (int) $request->limit <= 100) ? (int) $request->limit : 20;
+        $courses = Course::latest();
 
-        $students = $course->students()->with('user')->wherePivot('is_completed', $is_completed)->get();
-
-        if ($students->isEmpty() || !$students) {
-            return response()->json([
-                "message" => "There is no any student."
-            ]);
+        if (is_('instructor')) {
+            $instructorId = Auth::user()->instructor->id;
+            $courses->where('instructor_id', $instructorId);
         }
 
-        return response()->json([
-            'message' => "Data retrieved successfully.",
-            'students' => CourseStudentsResource::collection($students)
-        ], 200);
+        $courses = $courses->paginate($limit);
+
+        if ($courses->isEmpty()) {
+            return errorResponse("There is no student.");
+        }
+
+        return successResponse("Courses retrieved successfully.", $this->paginateFormat($courses));
+    }
+
+
+    // get enrolled students from course
+    public function getStudentsFromCourse(Course $course, Request $request)
+    {
+        $is_completed = $request->has('is_completed') ? filter_var($request->is_completed, FILTER_VALIDATE_BOOLEAN) : null;
+
+        $studentsQuery = $course->students()->with('user');
+
+        if ($is_completed !== null) {
+            $studentsQuery->wherePivot('is_completed', $is_completed);
+        }
+
+        $students = $studentsQuery->get();
+
+        if ($students->isEmpty()) {
+            return errorResponse("There is no student.");
+        }
+
+        return successResponse("Students retrieved successfully.", CourseStudentsResource::collection($students));
     }
 }
 
