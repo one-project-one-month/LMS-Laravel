@@ -41,9 +41,9 @@ class LessonController extends Controller
      *  get - /api/courses/:id/lessons/:id
      *  @param ( course_id , lesson_id )
      */
-    public function show(int $courseId,int $lessonId)
+    public function show(Course $course,Lesson $lesson)
     {
-        $lesson = $this->lessonInterface->show($courseId, $lessonId);
+        $lesson = $this->lessonInterface->show($course->id, $lesson->id);
 
         return successResponse("Lesson retrieved successfully.", new LessonResource($lesson));
     }
@@ -53,11 +53,11 @@ class LessonController extends Controller
      *  post - /api/courses/:id/lessons/
      *  @param - title, lesson_detail, is_available, ( video_url - get from uploadUrl Api )
      */
-    public function store(LessonRequest $lessonRequest,int $courseId)
+    public function store(LessonRequest $lessonRequest,int $id)
     {
         $attributes = $lessonRequest->validated();
 
-        $lesson = $this->lessonInterface->create($attributes,$courseId);
+        $lesson = $this->lessonInterface->create($attributes,$id);
 
         return successResponse("Lesson created successfully.", new LessonResource($lesson),201);
     }
@@ -69,12 +69,12 @@ class LessonController extends Controller
      * @param request,( course_id - optional )
      */
 
-    public function update(LessonRequest $lessonRequest,int $courseId,int $lessonId)
+    public function update(LessonRequest $lessonRequest, Course $course, Lesson $lesson)
 
     {
         $attributes = $lessonRequest->validated();
 
-        $lesson = $this->lessonInterface->update($attributes,$courseId,$lessonId);
+        $lesson = $this->lessonInterface->update($attributes,$course->id,$lesson->id);
 
         return successResponse("Lesson updated successfully.", new LessonResource($lesson));
     }
@@ -84,18 +84,18 @@ class LessonController extends Controller
      *  delete - /api/courses/:id/lessons/:id
      * @param ( course_id , lesson_id )
      */
-    public function destroy(int $courseId, int $lessonId)
+    public function destroy(Course $course,Lesson $lesson)
     {
-        $this->lessonInterface->delete($courseId, $lessonId);
+        $this->lessonInterface->delete($course->id, $lesson->id);
 
         return successResponse("Lesson deleted successfully.");
     }
 
     // toggle publish
     // patch - api/v1/courses/:id/lessons/:id/togglePublish
-    public function publish(int $courseId, int $lessonId)
+    public function publish(Course $course,Lesson $lesson)
     {
-        $lesson = $this->lessonInterface->togglePublish($courseId, $lessonId);
+        $lesson = $this->lessonInterface->togglePublish($course->id, $lesson->id);
 
         return successResponse("$lesson->title publish status has been changed.", new LessonResource($lesson));
     }

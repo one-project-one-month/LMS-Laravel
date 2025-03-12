@@ -21,10 +21,14 @@ use App\Http\Resources\InstructorResource;
 
 use App\Http\Resources\InstructorCollection;
 use App\Http\Resources\CourseStudentsResource;
+use App\Interfaces\AdminDashboardInterface;
 
 class AdminController extends Controller
 {
     use customPaginationFormat;
+
+    public function __construct(protected AdminDashboardInterface $adminDashboard) {
+    }
 
     public function login(Request $request)
     {
@@ -105,29 +109,11 @@ class AdminController extends Controller
         }
     }
 
-    // get all instructors
-    public function getAllInstructors(Request $request)
-    {
-        $limit = ($request->limit != null && (int) $request->limit <= 100) ? (int) $request->limit : 20;
-
-        $instructors = Instructor::latest()->with('user')->paginate($limit);
-
-
-        if ($instructors->isEmpty()) {
-            return errorResponse("Instructors not found.");
-        }
-
-        $instructors = $this->paginateFormat(InstructorResource::collection($instructors));
-
-        return successResponse('Instructors retrieved successfully.', $instructors);
-    }
 
     // get all admins
     public function getAllAdmins(Request $request)
     {
-        $limit = ($request->limit != null && (int) $request->limit <= 100) ? (int) $request->limit : 20;
-
-        $admins = User::admins()->latest()->paginate($limit);
+        $admins = $this->adminDashboard->getAllAdmins($request);
 
         if ($admins->isEmpty()) {
             return errorResponse("Admins not found.");
@@ -139,9 +125,7 @@ class AdminController extends Controller
     // get all students
     public function getAllStudents(Request $request)
     {
-        $limit = ($request->limit != null && (int) $request->limit <= 100) ? (int) $request->limit : 20;
-
-        $students = User::students()->latest()->paginate($limit);
+        $students = $this->adminDashboard->getAllStudents($request);
 
         if ($students->isEmpty()) {
             return errorResponse("Students not found.");
@@ -150,18 +134,26 @@ class AdminController extends Controller
         return successResponse('Students retrieved successfully.', $this->paginateFormat($students));
     }
 
+
+    // get all instructors
+    public function getAllInstructors(Request $request)
+    {
+        $instructors = $this->adminDashboard->getAllInstructors($request);
+
+        if ($instructors->isEmpty()) {
+            return errorResponse("Instructors not found.");
+        }
+
+        $instructors = $this->paginateFormat(InstructorResource::collection($instructors));
+
+        return successResponse('Instructors retrieved successfully.', $instructors);
+    }
+
+
     // get courses
     public function getCourses(Request $request)
     {
-        $limit = ($request->limit != null && (int) $request->limit <= 100) ? (int) $request->limit : 20;
-        $courses = Course::latest();
-
-        if (is_('instructor')) {
-            $instructorId = Auth::user()->instructor->id;
-            $courses->where('instructor_id', $instructorId);
-        }
-
-        $courses = $courses->paginate($limit);
+        $courses = $this->adminDashboard->getCourses($request);
 
         if ($courses->isEmpty()) {
             return errorResponse("There is no student.");
@@ -172,23 +164,17 @@ class AdminController extends Controller
 
 
     // get enrolled students from course
-    public function getStudentsFromCourse(Course $course, Request $request)
+    public function getStudentsFromCourse($id, Request $request)
     {
-        $is_completed = $request->has('is_completed') ? filter_var($request->is_completed, FILTER_VALIDATE_BOOLEAN) : null;
-
-        $studentsQuery = $course->students()->with('user');
-
-        if ($is_completed !== null) {
-            $studentsQuery->wherePivot('is_completed', $is_completed);
-        }
-
-        $students = $studentsQuery->get();
+        $students = $this->adminDashboard->getStudentsFromCourse($id, $request);
 
         if ($students->isEmpty()) {
             return errorResponse("There is no student.");
         }
 
-        return successResponse("Students retrieved successfully.", CourseStudentsResource::collection($students));
+        $students = $this->paginateFormat(CourseStudentsResource::collection($students));
+
+        return successResponse("Students retrieved successfully.", $students);
     }
 }
 

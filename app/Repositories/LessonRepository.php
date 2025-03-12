@@ -5,7 +5,6 @@ namespace App\Repositories;
 use App\Models\Course;
 use App\Models\Lesson;
 use App\Interfaces\LessonInterface;
-use ErrorException;
 
 class LessonRepository implements LessonInterface
 {

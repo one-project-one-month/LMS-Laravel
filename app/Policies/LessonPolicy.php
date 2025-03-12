@@ -22,7 +22,7 @@ class LessonPolicy
     public function view(User $user, Lesson $lesson): bool
     {
         $courserId = $lesson->course_id;
-        return $user->role->name === "admin" || $user->role->name === "instructor" || $user->student->courses->contains($courserId);
+        return is_('admin') || is_('instructor') || $user->student->courses->contains($courserId);
     }
 
 
@@ -31,7 +31,7 @@ class LessonPolicy
      */
     public function create(User $user): bool
     {
-        return $user->role->name === "instructor";
+        return is_('instructor');
     }
 
     /**
@@ -39,7 +39,7 @@ class LessonPolicy
      */
     public function update(User $user, Lesson $lesson): bool
     {
-        return $user->role->name === "instructor" && $user->instructor->id === $lesson->course->instructor_id;
+        return is_('instructor') && $user->instructor->id === $lesson->course->instructor_id;
     }
 
     /**
@@ -47,12 +47,12 @@ class LessonPolicy
      */
     public function delete(User $user, Lesson $lesson): bool
     {
-        return $user->role->name === "instructor" && $user->instructor->id === $lesson->course->instructor_id;
+        return is_('instructor') && $user->instructor->id === $lesson->course->instructor_id;
     }
 
     public function uploadVideoUrl(User $user, Lesson $lesson): bool
     {
 
-        return $user->role->name === "instructor" && $user->instructor->id === $lesson->course->instructor_id;
+        return is_('instructor') && $user->instructor->id === $lesson->course->instructor_id;
     }
 }
