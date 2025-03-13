@@ -11,7 +11,7 @@ interface LessonInterface
 
     public function create(array $data,int $courseId): ?Lesson;
 
-    public function update(array $data, int $courseId, int $lessonId): ?Lesson;
+    public function update(array $data, int $courseId, int $lessonId): Lesson;
 
     public function delete(int $courseId, int $lessonId): bool;
 

@@ -31,7 +31,7 @@ class LessonPolicy
      */
     public function create(User $user): bool
     {
-        return is_('instructor');
+        return $user->role->role == "instructor";
     }
 
     /**
@@ -39,7 +39,7 @@ class LessonPolicy
      */
     public function update(User $user, Lesson $lesson): bool
     {
-        return is_('instructor') && $user->instructor->id === $lesson->course->instructor_id;
+        return is_('instructor') && $user->instructor->id == $lesson->course->instructor_id;
     }
 
     /**

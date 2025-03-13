@@ -70,7 +70,6 @@ class LessonController extends Controller
      */
 
     public function update(LessonRequest $lessonRequest, Course $course, Lesson $lesson)
-
     {
         $attributes = $lessonRequest->validated();
 
@@ -106,16 +105,16 @@ class LessonController extends Controller
      * @param ( video ) type - mp4, mov, avi, wmv, flv, or webm.
      */
 
-    public function uploadUrl(LessonUploadVideoRequest $uploadVideoRequest)
+    public function uploadUrl(LessonUploadVideoRequest $request)
     {
-        $video = $uploadVideoRequest->file('video');
-        $path = $video->store('lesson-videos', 'public');
+        $video = $request->file('video');
+
+        $pathname = time() . '_' . uniqid() . '.' . $video->getClientOriginalExtension();
+        $path = $video->storeAs('lesson-videos', $pathname, 'public');
 
         return response()->json([
             'message' => 'Video uploaded successfully',
             'path' => $path,
         ], 200);
     }
-
-
 }
