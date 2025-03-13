@@ -82,11 +82,11 @@ Route::prefix('v1')->group(function () {
     Route::post("/admins/login", [AdminController::class, 'login']);
 
     // dashboard
-    Route::post("/admins/create", [AdminController::class, 'create']);
-    Route::get('/dashboard/admins', [AdminController::class, 'getAllAdmins']);
-    Route::get('/dashboard/students', [AdminController::class, 'getAllStudents']);
-    Route::get('/dashboard/instructors', [AdminController::class, 'getAllInstructors']);
-    Route::get('/dashboard/courses', [AdminController::class, 'getCourses'])->middleware('jwt.auth');
-    Route::get('/dashboard/courses/{id}/students', [AdminController::class, 'getStudentsFromCourse']);
+    Route::post("/admins/create", [AdminController::class, 'create'])->middleware('jwt.auth', 'admin');
+    Route::get('/dashboard/admins', [AdminController::class, 'getAllAdmins'])->middleware('jwt.auth','admin');
+    Route::get('/dashboard/instructors', [AdminController::class, 'getAllInstructors'])->middleware('jwt.auth', 'admin');
+    Route::get('/dashboard/students', [AdminController::class, 'getAllStudents'])->middleware('jwt.auth', 'admin');
+    Route::get('/dashboard/courses', [AdminController::class, 'getCourses'])->middleware('jwt.auth')->middleware('jwt.auth', 'isAdminOrInstructor');
+    Route::get('/dashboard/courses/{id}/students', [AdminController::class, 'getStudentsFromCourse'])->middleware('jwt.auth', 'isAdminOrInstructor');
 });
 
