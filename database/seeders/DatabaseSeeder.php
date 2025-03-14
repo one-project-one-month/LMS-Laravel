@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RoleSeeder::class);
 
+
         try {
             Admin::create([
                 "user_id" => User::create([
@@ -37,10 +38,11 @@ class DatabaseSeeder extends Seeder
             echo $e->getMessage();
         }
         Student::factory(5)->create();
-
         Category::factory(3)->create();
+
         Course::factory(4)->create();
         $this->call(LessonSeeder::class);
         
+        Course::factory(5)->create();
     }
 }

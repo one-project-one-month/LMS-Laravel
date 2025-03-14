@@ -2,6 +2,7 @@
 
 use App\Models\Role;
 use App\Models\Student;
+use Illuminate\Http\JsonResponse;
 
 function get_role_id($role)
 {
@@ -21,4 +22,19 @@ function is_enrolled($studentId, $courseId)
 
 
     return $student->courses->contains("id", $courseId);
+}
+
+function successResponse(string $message,$data = null,int $status = 200): JsonResponse
+{
+    return response()->json([
+        "message" => $message,
+        "data" => $data
+    ], $status);
+}
+
+function errorResponse(string $message, int $status = 404): JsonResponse
+{
+    return response()->json([
+        "message" => $message
+    ], $status);
 }

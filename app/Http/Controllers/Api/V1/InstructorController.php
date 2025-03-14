@@ -3,96 +3,96 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\InstructorResource;
 use App\Models\Instructor;
-use Exception;
 use Illuminate\Http\Request;
 
 class InstructorController extends Controller
 {
     public function index(Request $request)
     {
+        $instructors = Instructor::with('user')
+            ->filter($request->only(['search', 'edu', 'is_available']))
+            ->paginate(10);
 
-        // INITIALIZE BASE QUERY
-        $query = Instructor::query()->with('user:id,username,email,phone,address')->filter(request());
+        return InstructorResource::collection($instructors);
+    }
 
+    public function show(Instructor $instructor)
+    {
+        $instructor->load('user', 'courses');
+        return new InstructorResource($instructor);
+    }
 
+    public function store(Request $request)
+    {
+        $user = $request->user();
 
-        $validSortColumns = ['id', 'email'];
-        $sortBy = in_array($request->input('sort_by'), $validSortColumns, true) ? $request->input('sort_by') : 'id';
-        $sortDirection = in_array($request->input('sort_direction'), ['asc', 'desc'], true) ? $request->input('sort_direction') : 'desc';
-        $query->orderBy($sortBy, $sortDirection);
+        if($user->admin) {
+            return response()->json([
+                'message' => 'User is already registered as an admin'
+            ], 422);
+        }
 
+        if($user->student){
+            return response()->json([
+                'message' => 'User is already registered as a student'
+            ], 422);
+        }
 
+        if($user->instructor){
+            return response()->json([
+                'message' => 'User is already registered as an instructor'
+            ], 422);
+        }
 
+        $validated = $request->validate([
+            'nrc'           => ['required', 'string'],
+            'edu_background'=> ['required', 'string'],
+        ]);
 
-
-
-
-
-
-        // PAGINATION
-
-        $limit = $request->input('limit', 10);
-        $limit = (is_numeric($limit) && $limit > 0 && $limit <= 100) ? (int) $limit : 10;
-
-        $students = $query->paginate($limit);
-
-
-        // APPEND QUERY PARAMETERS TO PAGINATION LINKS
-
-        // $students->appends([
-        //     'q' => $searchTerm,
-        //     'sort_by' => $sortBy,
-        //     'sort_direction' => $sortDirection,
-        //     'limit' => $limit,
-        //     'filter_by' => $filterBy,
-        //     'filter_val' => $filterVal,
-        // ]);
-
-
-        // RETURN RESULTS
+        $instructor = Instructor::create([
+            'user_id'        => $user->id,
+            'nrc'            => $validated['nrc'],
+            'edu_background' => $validated['edu_background'],
+        ]);
 
         return response()->json([
-            "message" => "instructors retrieved successfully.",
-            "data" => [
-                "students" => $students
-            ]
-        ]);
+            'message' => 'Instructor created successfully',
+            'data'    => new InstructorResource($instructor)
+        ], 201);
     }
-    public function suspend(Request $request)
+
+    public function update(Request $request, Instructor $instructor)
     {
+        $validated = $request->validate([
+            'nrc'           => 'sometimes|required|string',
+            'edu_background'=> 'sometimes|required|string',
+        ]);
 
-        try {
-            $id = $request->validate([
-                "id" => "required|exists:students,id"
-            ]);
+        $instructor->update($validated);
 
-            $instructor = Instructor::find($id["id"]);
-            if (!$instructor) {
-                return response()->json([
-                    "message" => "Instructor not found.",
-                ], 404);
-            }
-            if ($instructor->user->is_available == false) {
-                $instructor->user->update(["is_available" => true]);
-                return response()->json([
-                    "message" => "Instructor is  unsuspend successfully.",
-                ]);
-            } else {
-                $instructor->user->update(["is_available" => false]);
-                return response()->json([
-                    "message" => "Instructor is  suspended successfully.",
-                ]);
-            }
+        return response()->json([
+            'message' => 'Instructor updated successfully',
+            'data'    => new InstructorResource($instructor)
+        ], 200);
+    }
 
+    public function destroy(Instructor $instructor)
+    {
+        $instructor->delete();
 
+        return response()->json([
+            'message' => 'Instructor deleted successfully'
+        ], 200);
+    }
 
+    public function suspend(Request $request, Instructor $instructor)
+    {
+        $instructor->user->update(['is_available' => false]);
 
-
-        } catch (Exception $e) {
-            return response()->json([
-                "message" => $e->getMessage(),
-            ], 500);
-        }
+        return response()->json([
+            'message' => 'Instructor suspended successfully'
+        ], 200);
     }
 }

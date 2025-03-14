@@ -2,6 +2,8 @@
 
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\instructorMiddleware;
+use App\Http\Middleware\EnsureUserIsStudent;
+use App\Http\Middleware\IsAdminOrInstructor;
 use App\Http\Middleware\JwtAuthMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -23,6 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'jwt.auth' => JwtAuthMiddleware::class,
             "admin" => AdminMiddleware::class,
             "instructor" => instructorMiddleware::class,
+            "isStudent" => EnsureUserIsStudent::class,
+            "isAdminOrInstructor" => IsAdminOrInstructor::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
@@ -41,7 +45,6 @@ return Application::configure(basePath: dirname(__DIR__))
         });
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->is("api/courses/*")) {
-
                 return response()->json([
                     "message" => "Course is Not found",
                     "error" => $e->getMessage()
@@ -66,10 +69,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 404);
             }
 
-            return response()->json([
-                "message" => "Resource not found",
-                "error" => $e->getMessage()
-            ], 404);
+            // return response()->json([
+            //     "message" => "Resource not found",
+            //     "error" => $e->getMessage()
+            // ], 404);
         });
 
 
@@ -78,5 +81,10 @@ return Application::configure(basePath: dirname(__DIR__))
         //         "message" => "something went wrong",
         //         "error" => $e->getMessage()
         //     ], 500);
+        // $exceptions->render(function (LessonNotFoundException $e, Request $request) {
+        //     return response()->json([
+        //         "message" => "Lesson is Not found",
+        //         "error" => $e->getMessage()
+        //     ], 404);
         // });
     })->create();

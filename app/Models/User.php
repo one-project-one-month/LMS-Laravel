@@ -34,7 +34,20 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasOne(Admin::class);
     }
 
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
 
+    public function scopeAdmins($query)
+    {
+        return $query->whereHas('role', fn($query) => $query->where('role', 'admin'));
+    }
+
+    public function scopeStudents($query)
+    {
+        return $query->whereHas('role', fn($query) => $query->where('role', 'student'));
+    }
 
     /**
      * The attributes that should be hidden for serialization.

@@ -2,20 +2,27 @@
 
 namespace App\Providers;
 
+use App\Interfaces\AdminDashboardInterface;
+use App\Interfaces\LessonInterface;
 use App\Models\Course;
 use App\Policies\CoursePolicy;
 use App\Repositories\course\CourseRepository;
 use App\Repositories\course\CourseRepositoryInterface;
 use App\Services\CourseService;
 use Fruitcake\Cors\CorsService;
+use App\Repositories\AdminDashboardReposity;
+use App\Repositories\LessonRepository;
+
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
+
     protected $policies = [
         Course::class => CoursePolicy::class,
     ];
+
     /**
      * Register any application services.
      */
@@ -28,6 +35,8 @@ class AppServiceProvider extends ServiceProvider
                 $app->make(CourseRepositoryInterface::class),
             );
         });
+        $this->app->bind(LessonInterface::class, LessonRepository::class);
+        $this->app->bind(AdminDashboardInterface::class,AdminDashboardReposity::class);
     }
 
     /**
