@@ -25,7 +25,8 @@ class CourseFactory extends Factory
             "original_price" => $this->faker->randomElement(["$200", "$300", "$600"]),
             "current_price" => $this->faker->randomElement(["$200", "$300", "$600"]),
             "category_id" => Category::factory(),
-            "instructor_id" => Instructor::factory()
+            "instructor_id" => Instructor::factory(),
+            "is_available" => true
         ];
     }
 }

@@ -5,6 +5,8 @@ namespace App\Policies;
 use App\Models\Course;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Http\Request;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class CoursePolicy
 {
@@ -25,19 +27,16 @@ class CoursePolicy
     {
         return true;
     }
-    public function course_details(User $user, Course $course): bool
-    {
-        return ($user->role_id === get_role_id("instructor") && $user->instructor->id === $course->instructor_id) or $user->role_id === get_role_id("admin");
-    }
+
+
+
+
 
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
-    {
-        return $user->role_id === 2;
-    }
+
 
     /**
      * Determine whether the user can update the model.
@@ -50,19 +49,36 @@ class CoursePolicy
             return false;
         }
     }
-    public function complete(User $user, Course $course): bool
+    public function course_details(User $user, Course $course): bool
+    {
+        if (is_("instructor") or is_("admin")) {
+            return ($user->instructor->id === $course->instructor_id) or is_("admin");
+        } else {
+            return false;
+        }
+    }
+    public function completeCourse(User $user, Course $course): bool
     {
 
 
+        if (is_("instructor")) {
 
-        return ($user->instructor->id === $course->instructor_id);
+            return ($user->instructor->id === $course->instructor_id);
+        } else {
+            return false;
+        }
     }
 
     /**
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, Course $course): bool
+
     {
-        return $user->instructor->id === $course->instructor_id  or $user->id === 1;
+        if (is_("instructor") or is_("admin")) {
+            return ($user->instructor->id === $course->instructor_id) or is_("admin");
+        } else {
+            return false;
+        }
     }
 }

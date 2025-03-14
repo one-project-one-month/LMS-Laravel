@@ -16,8 +16,11 @@ use App\Mail\CourseCreated;
 use App\Models\Course;
 use App\Models\Instructor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\Rules\Can;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 
 Route::prefix('v1')->group(function () {

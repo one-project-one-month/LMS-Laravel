@@ -15,15 +15,11 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 class CourseCreated extends Mailable
 {
     use Queueable, SerializesModels;
-    public $user;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(public Course $course,)
-    {
-        $this->user = JWTAuth::parseToken()->authenticated();
-    }
+    public function __construct(public Course $course, public User $user) {}
 
     /**
      * Get the message envelope.
