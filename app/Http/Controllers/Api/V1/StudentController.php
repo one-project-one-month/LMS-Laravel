@@ -3,110 +3,87 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Course;
-use App\Models\Role;
+use App\Http\Resources\StudentResource;
 use App\Models\Student;
-use App\Models\User;
-use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use stdClass;
+use Illuminate\Support\Facades\Log;
 
 class StudentController extends Controller
 {
-    public function show($id)
-    {
-        $student = Student::with('user:username,email')->find($id);
-        return response()->json([
-            "message" => "Student retrieved successfully.",
-            "data" => [
-                "student" => $student
-            ]
-        ]);
-    }
-
     public function index(Request $request)
     {
+        $students = Student::with('user')
+            ->filter($request->only(['search', 'is_available']))
+            ->paginate(10);
 
-        // INITIALIZE BASE QUERY
-        $student_role_id = Role::where("role", "student")->first()->id;
-        $query = Student::query()->with("user", function ($query) use ($student_role_id) {
-            $query->select(["id", "username", "email", "dob", "phone", "address", "role_id"])->where("role_id", $student_role_id);
-        })->filter(request());
+        return StudentResource::collection($students);
+    }
 
+    public function show(Student $student)
+    {
+        $student->load('user', 'courses');
+        return new StudentResource($student);
+    }
 
+    public function store(Request $request)
+    {
+        $user = $request->user();
 
-        $validSortColumns = ['id', 'email', 'dob'];
-        $sortBy = in_array($request->input('sort_by'), $validSortColumns, true) ? $request->input('sort_by') : 'id';
-        $sortDirection = in_array($request->input('sort_direction'), ['asc', 'desc'], true) ? $request->input('sort_direction') : 'desc';
-        $query->orderBy($sortBy, $sortDirection);
+        if($user->admin) {
+            return response()->json([
+                'message' => 'User is already registered as an admin'
+            ], 422);
+        }
 
+        if($user->instructor) {
+            return response()->json([
+                'message' => 'User is already registered as an instructor'
+            ], 422);
+        }
 
+        if($user->student){
+            return response()->json([
+                'message' => 'User is already registered as a student'
+            ], 422);
+        }
 
-
-
-
-
-
-
-        // PAGINATION
-
-        $limit = $request->input('limit', 10);
-        $limit = (is_numeric($limit) && $limit > 0 && $limit <= 100) ? (int) $limit : 10;
-
-        $students = $query->paginate($limit);
-
-
-        // APPEND QUERY PARAMETERS TO PAGINATION LINKS
-
-        // $students->appends([
-        //     'q' => $searchTerm,
-        //     'sort_by' => $sortBy,
-        //     'sort_direction' => $sortDirection,
-        //     'limit' => $limit,
-        //     'filter_by' => $filterBy,
-        //     'filter_val' => $filterVal,
-        // ]);
-
-
-        // RETURN RESULTS
+        $student = Student::create([
+            'user_id' => $user->id
+        ]);
 
         return response()->json([
-            "message" => "Students retrieved successfully.",
-            "data" => [
-                "students" => $students
-            ]
-        ]);
+            'message' => 'Student created successfully',
+            'data'    => new StudentResource($student)
+        ], 201);
     }
-    public function suspend(Request $request)
+
+    public function update(Request $request, Student $student)
     {
+        $validated = $request->validate([]);
 
-        try {
-            $id = $request->validate([
-                "id" => "required|exists:students,id"
-            ]);
+        $student->update($validated);
 
-            $student = Student::find($id["id"]);
-            if (!$student) {
-                return response()->json([
-                    "message" => "Student not found.",
-                ], 404);
-            }
-            if ($student->user->is_available == false) {
-                $student->user->update(["is_available" => true]);
-                return response()->json([
-                    "message" => "Student   is  unsuspend successfully.",
-                ]);
-            } else {
-                $student->user->update(["is_available" => false]);
-                return response()->json([
-                    "message" => "Student   is  suspended successfully.",
-                ]);
-            }
-        } catch (Exception $e) {
-            return response()->json([
-                "message" => $e->getMessage(),
-            ], 500);
-        }
+        return response()->json([
+            'message' => 'Student updated successfully',
+            'data'    => new StudentResource($student)
+        ], 200);
+    }
+
+    public function destroy(Student $student)
+    {
+        $student->delete();
+
+        return response()->json([
+            'message' => 'Student deleted successfully'
+        ], 200);
+    }
+
+    public function suspend(Request $request, Student $student)
+    {
+        $student->user->update(['is_available' => false]);
+
+        return response()->json([
+            'message' => 'Student suspended successfully'
+        ], 200);
     }
 }

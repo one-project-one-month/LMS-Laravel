@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\EnrollmentController;
 use App\Http\Controllers\Api\V1\InstructorController;
 use App\Http\Controllers\Api\V1\LessonController;
 use App\Http\Controllers\Api\V1\StudentController;
+use App\Http\Controllers\Api\V1\UserController;
 use App\Jobs\RequestCreateCourse;
 use App\Mail\CourseCreated;
 use App\Models\Course;
@@ -31,6 +32,7 @@ Route::get('/students', [StudentController::class, 'index']);
 Route::post('/students/suspend', [StudentController::class, 'suspend'])->middleware(['jwt.auth', 'admin']);
 Route::get('/instructors', [InstructorController::class, 'index']);
 Route::post('/instructors/suspend', [InstructorController::class, 'suspend'])->middleware(['jwt.auth', 'admin']);
+
 Route::middleware('jwt.auth')->group(function () {
     Route::delete("/auth/logout", [AuthController::class, "destroy"]);
     Route::get('/categories/{id}', [CategoryController::class, 'show']);
@@ -38,6 +40,13 @@ Route::middleware('jwt.auth')->group(function () {
     Route::get('courses/{course}/social-link', [SocialLinkController::class, 'show']);
     Route::post('courses/{course}/social-link', [SocialLinkController::class, 'store']);
     Route::patch('courses/{course}/social-link', [SocialLinkController::class, 'update']);
+    Route::apiResource('instructors', InstructorController::class);
+    Route::apiResource('students', StudentController::class);
+    Route::apiResource('users', UserController::class);
+    Route::middleware('admin')->group(function() {
+        Route::post('instructors/{instructor}/suspend', [InstructorController::class, 'suspend']);
+        Route::post('students/{student}/suspend', [StudentController::class, 'suspend']);
+    });
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);
