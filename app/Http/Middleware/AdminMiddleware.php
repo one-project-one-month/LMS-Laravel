@@ -9,14 +9,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AdminMiddleware
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::user()->role_id === 3) {
+
+        if (Auth::user()->role_id === get_role_id("admin")) {
+
+       
             return $next($request);
         } else {
             return response()->json([

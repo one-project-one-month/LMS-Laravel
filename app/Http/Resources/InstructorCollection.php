@@ -10,21 +10,13 @@ class InstructorCollection extends ResourceCollection
     public function toArray(Request $request): array
     {
         return [
-            'data' => $this->collection, // The actual instructor data
-            'pagination' => [
-                'current_page' => $this->currentPage(),
-                'per_page' => $this->perPage(),
-                'total' => $this->total(),
-                'last_page' => $this->lastPage(),
-                'from' => $this->firstItem(),
-                'to' => $this->lastItem(),
-            ],
-            'links' => [
-                'first' => $this->url(1),
-                'last' => $this->url($this->lastPage()),
-                'prev' => $this->previousPageUrl(),
-                'next' => $this->nextPageUrl(),
-            ],
+            'data' => $this->collection,
+            // 'current_page' => $this->currentPage(),
+            // 'last_page' => $this->lastPage(),
+            // 'next_page_url' => $this->nextPageUrl(),
+            // 'prev_page_url' => $this->previousPageUrl(),
+            // 'per_page' => $this->perPage(),
+            // 'total' => $this->total()
         ];
     }
 }

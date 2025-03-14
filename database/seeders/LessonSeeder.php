@@ -14,9 +14,12 @@ class LessonSeeder extends Seeder
      */
     public function run(): void
     {
+
+
         $course = Course::factory()->create();
         Lesson::factory(19)->create([
             'course_id' => $course->id,
         ]);
+
     }
 }

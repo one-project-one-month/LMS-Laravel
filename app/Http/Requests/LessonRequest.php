@@ -28,7 +28,7 @@ class LessonRequest extends FormRequest
             "title" => ['required',"min:3","max:225","string"],
             "lesson_detail" => ['required','string'],
             "is_available" => ['nullable','boolean'],
-            "video_url" => ['required','string']
+            "video_url" => ['sometimes','required','string']
 
         ];
     }

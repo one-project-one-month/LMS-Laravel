@@ -11,70 +11,18 @@ use Tymon\JWTAuth\Facades\JWTFactory;
 
 class EnrollmentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function enroll(Request $request, Course $course)
     {
-
-
-        // $user = auth()->user();
         $user = JWTAuth::parseToken()->authenticate();
         $student = $user->student;
-        if ($student) {
-            $enroll =     $student->courses()->attach($course);
-        }
 
-
-        return response()->json([
-            "message" => "you enroll the $course->course_name successfully ",
-            "data" => [
-                "user" => $user,
-                "students" => $course->students,
-                "course" => $course,
-                "enroll" => $enroll
-            ]
-        ]);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-
-
-    /**
-     * Display the specified resource.
-     */
-
-    /**
-     * Update the specified resource in storage.
-     */
-
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function unroll($course)
-    {
-
-
-
-        $user = JWTAuth::parseToken()->authenticate();
-        $student = $user->student;
-        if ($student) {
+        if (!$student->isEnroll($course)) {
+            $student->courses()->attach($course->id);
+            return successResponse("You enrolled the {$course->course_name} successfully.");
+        } else {
             $student->courses()->detach($course->id);
+            return successResponse("You unenrolled the {$course->course_name} successfully.");
         }
 
-
-
-        return response()->json([
-            "message" => "you unenroll the $course->course_name successfully ",
-            "data" => [
-                "user" => $user,
-
-                "course" => $course,
-
-            ]
-        ]);
     }
 }
