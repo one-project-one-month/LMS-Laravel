@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\EnrollmentController;
 use App\Http\Controllers\Api\V1\InstructorController;
 use App\Http\Controllers\Api\V1\LessonController;
 use App\Http\Controllers\Api\V1\StudentController;
+use App\Http\Controllers\Api\V1\UserController;
 use App\Jobs\RequestCreateCourse;
 use App\Mail\CourseCreated;
 use App\Models\Course;
@@ -17,7 +18,6 @@ use App\Models\Instructor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
-
 
 
 Route::prefix('v1')->group(function () {
