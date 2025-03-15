@@ -61,7 +61,6 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-        Log::info($request->all());
 
         $validated = $request->validate([
             'username'      => 'sometimes|required|string|max:255',

@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\EnrollmentController;
 use App\Http\Controllers\Api\V1\InstructorController;
 use App\Http\Controllers\Api\V1\LessonController;
 use App\Http\Controllers\Api\V1\StudentController;
+use App\Http\Controllers\Api\V1\UpdateProfilePhotoController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Jobs\RequestCreateCourse;
 use App\Mail\CourseCreated;
@@ -29,12 +30,23 @@ Route::prefix('v1')->group(function () {
     Route::post("/auth/login", [AuthController::class, "login"]);
     Route::delete("/auth/logout", [AuthController::class, "destroy"])->middleware('jwt.auth');
 
+    // User Profile Photo Update
+    Route::post('/users/{user}/profile-photo', UpdateProfilePhotoController::class)->middleware('jwt.auth');
+
     // student
     Route::get('/students', [StudentController::class, 'index']);
+    Route::get('/students/{student}', [StudentController::class, 'show'])->middleware(['jwt.auth']);
+    Route::post('/students', [StudentController::class, 'store'])->middleware(['jwt.auth']);
+    Route::put('/students/{student}', [StudentController::class, 'update'])->middleware(['jwt.auth']);
+    Route::delete('/students/{student}', [StudentController::class, 'destroy'])->middleware(['jwt.auth']);
     Route::post('/students/suspend', [StudentController::class, 'suspend'])->middleware(['jwt.auth', 'admin']);
 
     // instructor
     Route::get('/instructors', [InstructorController::class, 'index']);
+    Route::get('/instructors/{instructor}', [InstructorController::class, 'show'])->middleware(['jwt.auth']);
+    Route::post('/instructors', [InstructorController::class, 'store'])->middleware(['jwt.auth']);
+    Route::put('/instructors/{instructor}', [InstructorController::class, 'update'])->middleware(['jwt.auth']);
+    Route::delete('/instructors/{instructor}', [InstructorController::class, 'destroy'])->middleware(['jwt.auth']);
     Route::post('/instructors/suspend', [InstructorController::class, 'suspend'])->middleware(['jwt.auth', 'admin']);
 
 
@@ -80,7 +92,7 @@ Route::prefix('v1')->group(function () {
     Route::delete('/courses/{course}/lessons/{lesson}', [LessonController::class, 'destroy'])->middleware('jwt.auth', 'can:delete,lesson');
     Route::patch('/courses/{course}/lessons/{lesson}/togglePublish', [LessonController::class, 'publish'])->middleware('jwt.auth', 'can:update,lesson');
     Route::post('/lessons/uploadUrl', [LessonController::class, 'uploadUrl'])->middleware('jwt.auth', 'can:uploadVideoUrl,lesson');
-    
+
     // admin
     Route::post("/admins/login", [AdminController::class, 'login']);
 
@@ -92,4 +104,3 @@ Route::prefix('v1')->group(function () {
     Route::get('/dashboard/courses', [AdminController::class, 'getCourses'])->middleware('jwt.auth')->middleware('jwt.auth', 'isAdminOrInstructor');
     Route::get('/dashboard/courses/{id}/students', [AdminController::class, 'getStudentsFromCourse'])->middleware('jwt.auth', 'isAdminOrInstructor');
 });
-
