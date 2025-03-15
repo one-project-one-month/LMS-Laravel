@@ -4,86 +4,114 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\StudentResource;
-use App\Models\Student;
+use App\Repositories\StudentRepositoryInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use App\Traits\ResponseTraits;
 
 class StudentController extends Controller
 {
-    public function index(Request $request)
-    {
-        $students = Student::with('user')
-            ->filter($request->only(['search', 'is_available']))
-            ->paginate(10);
+    use ResponseTraits;
 
-        return StudentResource::collection($students);
+    protected $studentRepository;
+
+    public function __construct(StudentRepositoryInterface $studentRepository)
+    {
+        $this->studentRepository = $studentRepository;
     }
 
-    public function show(Student $student)
+    public function index(Request $request)
     {
-        $student->load('user', 'courses');
-        return new StudentResource($student);
+        $filters = $request->only(['search', 'is_available']);
+        $students = $this->studentRepository->getAll($filters);
+
+        return $this->successResponse(
+            'Students retrieved successfully',
+            StudentResource::collection($students),
+            200
+        );
+    }
+
+    public function show($id)
+    {
+        $student = $this->studentRepository->find($id, ['user', 'courses']);
+        if (!$student) {
+            return $this->errorResponse('Student not found', '', 404);
+        }
+
+        return $this->successResponse(
+            'Student retrieved successfully',
+            new StudentResource($student),
+            200
+        );
     }
 
     public function store(Request $request)
     {
         $user = $request->user();
 
-        if($user->admin) {
-            return response()->json([
-                'message' => 'User is already registered as an admin'
-            ], 422);
+        if ($user->admin) {
+            return $this->errorResponse('User is already registered as an admin', '', 422);
         }
 
-        if($user->instructor) {
-            return response()->json([
-                'message' => 'User is already registered as an instructor'
-            ], 422);
+        if ($user->instructor) {
+            return $this->errorResponse('User is already registered as an instructor', '', 422);
         }
 
-        if($user->student){
-            return response()->json([
-                'message' => 'User is already registered as a student'
-            ], 422);
+        if ($user->student) {
+            return $this->errorResponse('User is already registered as a student', '', 422);
         }
 
-        $student = Student::create([
+        $student = $this->studentRepository->create([
             'user_id' => $user->id
         ]);
 
-        return response()->json([
-            'message' => 'Student created successfully',
-            'data'    => new StudentResource($student)
-        ], 201);
+        return $this->successResponse(
+            'Student created successfully',
+            new StudentResource($student),
+            201
+        );
     }
 
-    public function update(Request $request, Student $student)
+    public function update(Request $request, $id)
     {
+        // Adjust validation rules as needed
         $validated = $request->validate([]);
 
-        $student->update($validated);
+        $student = $this->studentRepository->find($id);
+        if (!$student) {
+            return $this->errorResponse('Student not found', '', 404);
+        }
 
-        return response()->json([
-            'message' => 'Student updated successfully',
-            'data'    => new StudentResource($student)
-        ], 200);
+        $this->studentRepository->update($student, $validated);
+
+        return $this->successResponse(
+            'Student updated successfully',
+            new StudentResource($student),
+            200
+        );
     }
 
-    public function destroy(Student $student)
+    public function destroy($id)
     {
-        $student->delete();
+        $student = $this->studentRepository->find($id);
+        if (!$student) {
+            return $this->errorResponse('Student not found', '', 404);
+        }
 
-        return response()->json([
-            'message' => 'Student deleted successfully'
-        ], 200);
+        $this->studentRepository->delete($student);
+
+        return $this->successResponse('Student deleted successfully', null, 200);
     }
 
-    public function suspend(Request $request, Student $student)
+    public function suspend($id)
     {
-        $student->user->update(['is_available' => false]);
+        $student = $this->studentRepository->find($id, ['user']);
+        if (!$student) {
+            return $this->errorResponse('Student not found', '', 404);
+        }
 
-        return response()->json([
-            'message' => 'Student suspended successfully'
-        ], 200);
+        $this->studentRepository->suspend($student);
+
+        return $this->successResponse('Student suspended successfully', null, 200);
     }
 }

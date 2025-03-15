@@ -3,93 +3,73 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Repositories\CategoryRepositoryInterface;
+use App\Traits\ResponseTraits;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    use ResponseTraits;
+
+    protected $categoryRepository;
+
+    public function __construct(CategoryRepositoryInterface $categoryRepository)
+    {
+        $this->categoryRepository = $categoryRepository;
+    }
+
     public function index()
     {
-        $categories = Category::all();
-        return response()->json([
-            'message' => 'Categories retrived successfully',
-            'data' => $categories
-        ], 200);
+        $categories = $this->categoryRepository->all();
+        return $this->successResponse('Categories retrieved successfully', $categories, 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $category  = Category::create([
-            'name' => $request->name,
+        $data = $request->validate([
+            'name' => 'required|string',
         ]);
 
-        return response()->json([
-            'message' => 'Category created successfully',
-            'data' => $category,
-        ]);
+        $category = $this->categoryRepository->create($data);
+
+        return $this->successResponse('Category created successfully', $category, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show($id)
     {
-        $category = Category::find($id);
+        $category = $this->categoryRepository->find($id);
         if (!$category) {
-            return response()->json([
-                'message' => 'Category not found']
-                , 404);
+            return $this->errorResponse('Category not found', '', 404);
         }
 
-        return response()->json(
-            ['data' => $category]
-             ,200);
+        return $this->successResponse('Category retrieved successfully', $category, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request,$id)
+    public function update(Request $request, $id)
     {
-        $category = Category::find($id);
-
-        if(!$category){
-            return response()->json([
-            'message' => 'Category not found',
-            ], 404);
+        $category = $this->categoryRepository->find($id);
+        if (!$category) {
+            return $this->errorResponse('Category not found', '', 404);
         }
-        $category->update([
-            'name' => $request->name,
+
+        $data = $request->validate([
+            'name' => 'required|string',
         ]);
 
-        return response()->json([
-            'message' => 'Category updated successfully',
-            'data' => $category,
-        ]);
+        $this->categoryRepository->update($category, $data);
+
+        return $this->successResponse('Category updated successfully', $category, 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($id)
     {
-        $category = Category::find($id);
+        $category = $this->categoryRepository->find($id);
         if (!$category) {
-            return response()->json([
-                'message' => 'Category not found']
-                , 404);
+            return $this->errorResponse('Category not found', '', 404);
         }
 
-        $category->delete();
+        $this->categoryRepository->delete($category);
 
-        return response()->json(
-            ['message' => 'Category deleted successfully']
-            , 200);
-        }
+        return $this->successResponse('Category deleted successfully', null, 200);
+    }
 }
