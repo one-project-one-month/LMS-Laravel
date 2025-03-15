@@ -80,16 +80,16 @@ Route::prefix('v1')->group(function () {
     Route::delete('/courses/{course}/lessons/{lesson}', [LessonController::class, 'destroy'])->middleware('jwt.auth', 'can:delete,lesson');
     Route::patch('/courses/{course}/lessons/{lesson}/togglePublish', [LessonController::class, 'publish'])->middleware('jwt.auth', 'can:update,lesson');
     Route::post('/lessons/uploadUrl', [LessonController::class, 'uploadUrl'])->middleware('jwt.auth', 'can:uploadVideoUrl,lesson');
-    
+
     // admin
     Route::post("/admins/login", [AdminController::class, 'login']);
+    Route::post("/admins/refresh-token", [AdminController::class, 'refreshToken']);
 
     // dashboard
     Route::post("/admins/create", [AdminController::class, 'create'])->middleware('jwt.auth', 'admin');
-    Route::get('/dashboard/admins', [AdminController::class, 'getAllAdmins'])->middleware('jwt.auth','admin');
+    Route::get('/dashboard/admins', [AdminController::class, 'getAllAdmins'])->middleware('jwt.auth', 'admin');
     Route::get('/dashboard/instructors', [AdminController::class, 'getAllInstructors'])->middleware('jwt.auth', 'admin');
     Route::get('/dashboard/students', [AdminController::class, 'getAllStudents'])->middleware('jwt.auth', 'admin');
     Route::get('/dashboard/courses', [AdminController::class, 'getCourses'])->middleware('jwt.auth')->middleware('jwt.auth', 'isAdminOrInstructor');
     Route::get('/dashboard/courses/{id}/students', [AdminController::class, 'getStudentsFromCourse'])->middleware('jwt.auth', 'isAdminOrInstructor');
 });
-

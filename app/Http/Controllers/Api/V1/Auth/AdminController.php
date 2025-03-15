@@ -10,7 +10,6 @@ use App\Models\Student;
 use App\Models\Instructor;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
-use function PHPSTORM_META\map;
 use Illuminate\Validation\Rule;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Controllers\Controller;
@@ -22,13 +21,13 @@ use App\Http\Resources\InstructorResource;
 use App\Http\Resources\InstructorCollection;
 use App\Http\Resources\CourseStudentsResource;
 use App\Interfaces\AdminDashboardInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 class AdminController extends Controller
 {
     use customPaginationFormat;
 
-    public function __construct(protected AdminDashboardInterface $adminDashboard) {
-    }
+    public function __construct(protected AdminDashboardInterface $adminDashboard) {}
 
     public function login(Request $request)
     {
@@ -44,10 +43,10 @@ class AdminController extends Controller
                 ], 401);
             }
 
+
             return response()->json([
                 'message' => 'Login successfully as Admin ',
                 'data' => [
-
                     'token' => $token
                 ]
             ]);
@@ -176,5 +175,36 @@ class AdminController extends Controller
 
         return successResponse("Students retrieved successfully.", $students);
     }
-}
 
+
+    public function refreshToken()
+    {
+        $token = JWTAuth::getToken();
+        if (!$token) {
+            return response()->json([
+                'message' => 'Token not provided'
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $isExpired = JWTAuth::parseToken()->check();
+
+        if (!$isExpired) {
+            $newToken = JWTAuth::refresh($token);
+            JWTAuth::invalidate($token);
+
+            return response()->json([
+                'message' => 'Token refreshed successfully.',
+                'data' => [
+                    'token' => $newToken
+                ]
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Token is still valid.',
+            'data' => [
+                'token' => (string) $token
+            ]
+        ]);
+    }
+}
