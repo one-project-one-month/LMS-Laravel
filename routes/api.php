@@ -95,10 +95,11 @@ Route::prefix('v1')->group(function () {
 
     // admin
     Route::post("/admins/login", [AdminController::class, 'login']);
+    Route::post("/admins/refresh-token", [AdminController::class, 'refreshToken']);
 
     // dashboard
     Route::post("/admins/create", [AdminController::class, 'create'])->middleware('jwt.auth', 'admin');
-    Route::get('/dashboard/admins', [AdminController::class, 'getAllAdmins'])->middleware('jwt.auth','admin');
+    Route::get('/dashboard/admins', [AdminController::class, 'getAllAdmins'])->middleware('jwt.auth', 'admin');
     Route::get('/dashboard/instructors', [AdminController::class, 'getAllInstructors'])->middleware('jwt.auth', 'admin');
     Route::get('/dashboard/students', [AdminController::class, 'getAllStudents'])->middleware('jwt.auth', 'admin');
     Route::get('/dashboard/courses', [AdminController::class, 'getCourses'])->middleware('jwt.auth')->middleware('jwt.auth', 'isAdminOrInstructor');
