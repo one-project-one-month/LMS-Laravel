@@ -26,10 +26,15 @@ function is_enrolled($studentId, $courseId)
 
 function successResponse(string $message,$data = null,int $status = 200): JsonResponse
 {
-    return response()->json([
+    $response = [
         "message" => $message,
-        "data" => $data
-    ], $status);
+    ];
+
+    if ($data != null) {
+        $response['data'] = $data;
+    }
+
+    return response()->json($response, $status);
 }
 
 function errorResponse(string $message, int $status = 404): JsonResponse

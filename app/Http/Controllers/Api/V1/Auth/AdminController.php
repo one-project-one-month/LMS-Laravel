@@ -21,13 +21,14 @@ use App\Http\Resources\InstructorResource;
 use App\Http\Resources\InstructorCollection;
 use App\Http\Resources\CourseStudentsResource;
 use App\Interfaces\AdminDashboardInterface;
+use App\Services\DashboardService;
 use Symfony\Component\HttpFoundation\Response;
 
 class AdminController extends Controller
 {
     use customPaginationFormat;
 
-    public function __construct(protected AdminDashboardInterface $adminDashboard) {}
+    public function __construct(protected DashboardService $dashboardService) {}
 
     public function login(Request $request)
     {
@@ -112,7 +113,7 @@ class AdminController extends Controller
     // get all admins
     public function getAllAdmins(Request $request)
     {
-        $admins = $this->adminDashboard->getAllAdmins($request);
+        $admins = $this->dashboardService->getAllAdmins($request);
 
         if ($admins->isEmpty()) {
             return errorResponse("Admins not found.");
@@ -124,7 +125,7 @@ class AdminController extends Controller
     // get all students
     public function getAllStudents(Request $request)
     {
-        $students = $this->adminDashboard->getAllStudents($request);
+        $students = $this->dashboardService->getAllStudents($request);
 
         if ($students->isEmpty()) {
             return errorResponse("Students not found.");
@@ -137,7 +138,7 @@ class AdminController extends Controller
     // get all instructors
     public function getAllInstructors(Request $request)
     {
-        $instructors = $this->adminDashboard->getAllInstructors($request);
+        $instructors = $this->dashboardService->getAllInstructors($request);
 
         if ($instructors->isEmpty()) {
             return errorResponse("Instructors not found.");
@@ -152,7 +153,7 @@ class AdminController extends Controller
     // get courses
     public function getCourses(Request $request)
     {
-        $courses = $this->adminDashboard->getCourses($request);
+        $courses = $this->dashboardService->getCourses($request);
 
         if ($courses->isEmpty()) {
             return errorResponse("There is no student.");
@@ -165,7 +166,7 @@ class AdminController extends Controller
     // get enrolled students from course
     public function getStudentsFromCourse($id, Request $request)
     {
-        $students = $this->adminDashboard->getStudentsFromCourse($id, $request);
+        $students = $this->dashboardService->getStudentsFromCourse($id, $request);
 
         if ($students->isEmpty()) {
             return errorResponse("There is no student.");
