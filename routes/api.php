@@ -91,7 +91,7 @@ Route::prefix('v1')->group(function () {
     Route::put('/courses/{course}/lessons/{lesson}', [LessonController::class, 'update'])->middleware('jwt.auth', 'can:update,lesson');
     Route::delete('/courses/{course}/lessons/{lesson}', [LessonController::class, 'destroy'])->middleware('jwt.auth', 'can:delete,lesson');
     Route::patch('/courses/{course}/lessons/{lesson}/togglePublish', [LessonController::class, 'publish'])->middleware('jwt.auth', 'can:update,lesson');
-    Route::post('/lessons/uploadUrl', [LessonController::class, 'uploadUrl'])->middleware('jwt.auth', 'can:uploadVideoUrl,lesson');
+
 
     // admin
     Route::post("/admins/login", [AdminController::class, 'login']);

@@ -12,28 +12,27 @@ use App\Http\Resources\LessonResource;
 use App\Http\Resources\LessonCollection;
 use App\Http\Requests\LessonUploadVideoRequest;
 use App\Repositories\LessonRepository;
+use App\Services\LessonService;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
 class LessonController extends Controller
 {
-    public function __construct(protected LessonInterface $lessonInterface)
-    {
-
+    public function __construct(protected LessonService $lessonService){
     }
     /**
      *  Get all lessons
      *  get - /api/courses/:id/lessons
      *  @param ( course_id )
      */
-    public function index(int $id)
+    public function index($courseId)
     {
-        $lessons = $this->lessonInterface->all($id);
+        $lessons = $this->lessonService->all($courseId);
 
         if ($lessons->isEmpty()) {
             return errorResponse("Lessons not found.", 400);
         }
 
-        return successResponse("Lessons retrieved successfully.", new LessonCollection($lessons), 200);
+        return successResponse("Lessons retrieved successfully.", new LessonCollection($lessons));
     }
 
     /**
@@ -43,7 +42,7 @@ class LessonController extends Controller
      */
     public function show(Course $course,Lesson $lesson)
     {
-        $lesson = $this->lessonInterface->show($course->id, $lesson->id);
+        $lesson = $this->lessonService->show($course->id, $lesson->id);
 
         return successResponse("Lesson retrieved successfully.", new LessonResource($lesson));
     }
@@ -53,11 +52,11 @@ class LessonController extends Controller
      *  post - /api/courses/:id/lessons/
      *  @param - title, lesson_detail, is_available, ( video_url - get from uploadUrl Api )
      */
-    public function store(LessonRequest $lessonRequest,int $id)
+    public function store(LessonRequest $lessonRequest,int $courseId)
     {
         $attributes = $lessonRequest->validated();
 
-        $lesson = $this->lessonInterface->create($attributes,$id);
+        $lesson = $this->lessonService->create($attributes,$courseId);
 
         return successResponse("Lesson created successfully.", new LessonResource($lesson),201);
     }
@@ -73,7 +72,7 @@ class LessonController extends Controller
     {
         $attributes = $lessonRequest->validated();
 
-        $lesson = $this->lessonInterface->update($attributes,$course->id,$lesson->id);
+        $lesson = $this->lessonService->update($attributes,$course->id,$lesson->id);
 
         return successResponse("Lesson updated successfully.", new LessonResource($lesson));
     }
@@ -85,7 +84,7 @@ class LessonController extends Controller
      */
     public function destroy(Course $course,Lesson $lesson)
     {
-        $this->lessonInterface->delete($course->id, $lesson->id);
+        $this->lessonService->delete($course->id, $lesson->id);
 
         return successResponse("Lesson deleted successfully.");
     }
@@ -94,27 +93,8 @@ class LessonController extends Controller
     // patch - api/v1/courses/:id/lessons/:id/togglePublish
     public function publish(Course $course,Lesson $lesson)
     {
-        $lesson = $this->lessonInterface->togglePublish($course->id, $lesson->id);
+        $lesson = $this->lessonService->togglePublish($course->id, $lesson->id);
 
         return successResponse("$lesson->title publish status has been changed.", new LessonResource($lesson));
-    }
-
-    /**
-     *  video upload
-     *  post - /api/lessons/uploadUrl
-     * @param ( video ) type - mp4, mov, avi, wmv, flv, or webm.
-     */
-
-    public function uploadUrl(LessonUploadVideoRequest $request)
-    {
-        $video = $request->file('video');
-
-        $pathname = time() . '_' . uniqid() . '.' . $video->getClientOriginalExtension();
-        $path = $video->storeAs('lesson-videos', $pathname, 'public');
-
-        return response()->json([
-            'message' => 'Video uploaded successfully',
-            'path' => $path,
-        ], 200);
     }
 }

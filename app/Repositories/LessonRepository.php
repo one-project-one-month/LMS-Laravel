@@ -4,10 +4,9 @@ namespace App\Repositories;
 
 use App\Models\Course;
 use App\Models\Lesson;
-use App\Interfaces\LessonInterface;
 use Illuminate\Support\Facades\Storage;
 
-class LessonRepository implements LessonInterface
+class LessonRepository
 {
     // get all lesson
     public function all(int $courseID): \Illuminate\Database\Eloquent\Collection
@@ -42,9 +41,9 @@ class LessonRepository implements LessonInterface
         $course = Course::findOrFail($courseId);
         $lesson = Lesson::findOrFail($lessonId);
 
-        if (isset($data["video_url"]) && Storage::disk('public')->exists($lesson->video_url)) {
-            Storage::disk('public')->delete($lesson->video_url);
-        }
+        // if (isset($data["video_url"]) && Storage::disk('public')->exists($lesson->video_url)) {
+        //     Storage::disk('public')->delete($lesson->video_url);
+        // }
 
         $this->validateLessonBelongsToCourse($course, $lesson);
 
