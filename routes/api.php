@@ -11,22 +11,18 @@ use App\Http\Controllers\Api\V1\InstructorController;
 use App\Http\Controllers\Api\V1\LessonController;
 use App\Http\Controllers\Api\V1\StudentController;
 use App\Http\Controllers\Api\V1\UpdateProfilePhotoController;
-use App\Http\Controllers\Api\V1\UserController;
-use App\Jobs\RequestCreateCourse;
-use App\Mail\CourseCreated;
-use App\Models\Course;
-use App\Models\Instructor;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Validation\Rules\Can;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
-
+Route::post('test', function (Request $request) {
+    $cookie = $request->cookie("test");
+    return response()->json(['message' => 'Hello scantun', "cookie" => $cookie])->cookie("test", "cookie", 1);
+});
+// Route::post("/v1/auth/register",[AuthController::class , "test"]);
 Route::prefix('v1')->group(function () {
-    // authentication
     Route::post("/auth/register", [AuthController::class, "register"]);
+    Route::post("/auth/refresh", [AuthController::class, "refreshToken"]);
     Route::post("/auth/login", [AuthController::class, "login"]);
     Route::delete("/auth/logout", [AuthController::class, "destroy"])->middleware('jwt.auth');
 
@@ -69,8 +65,8 @@ Route::prefix('v1')->group(function () {
 
     Route::patch("/courses/unpublish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "can:update,course"]);
     Route::patch("/courses/publish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "admin"]);
-    Route::post("/courses/{course}/thumbnail", [CourseController::class, "updateThumbnail"])->middleware(["jwt.auth"]);
-    Route::patch("/courses/{course}/complete", [CourseController::class, "complete"])->middleware(["jwt.auth"]);
+    Route::post("/courses/{course}/thumbnail", [CourseController::class, "updateThumbnail"])->middleware(["jwt.auth","can:update,course"]);
+    Route::patch("/courses/{course}/complete", [CourseController::class, "complete"])->middleware(["jwt.auth","can:update,course"]);
     Route::get("/courses/{course}/request", [CourseController::class, "request"])->middleware("jwt.auth", "can:update,course");
 
 
@@ -94,8 +90,7 @@ Route::prefix('v1')->group(function () {
 
 
     // admin
-    Route::post("/admins/login", [AdminController::class, 'login']);
-    Route::post("/admins/refresh-token", [AdminController::class, 'refreshToken']);
+    //login and refresh token is combine to auth controller
 
     // dashboard
     Route::post("/admins/create", [AdminController::class, 'create'])->middleware('jwt.auth', 'admin');

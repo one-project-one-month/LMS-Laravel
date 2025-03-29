@@ -3,10 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Support\Str;
+use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -37,6 +38,10 @@ class User extends Authenticatable implements JWTSubject
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+    public function refresh_token()
+    {
+        return $this->hasOne(RefreshToken::class);
     }
 
     public function scopeAdmins($query)
@@ -80,5 +85,15 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+    protected static function booted(): void
+    {
+        static::created(function (User $user) {
+            
+            $refresh_token = Str::random(16);
+            $user->refresh_token()->create([
+                'refresh_token' => $refresh_token,
+            ]);
+        });
     }
 }

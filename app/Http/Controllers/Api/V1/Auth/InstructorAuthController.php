@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\InstructorLoginRequest;
-use App\Http\Requests\InstructorRegisterRequest;
-use App\Models\Instructor;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
+use App\Models\Instructor;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
+use Illuminate\Http\JsonResponse;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Exceptions\JWTException;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Http\Requests\InstructorLoginRequest;
+use App\Http\Requests\InstructorRegisterRequest;
 
 class InstructorAuthController extends Controller
 {
@@ -35,13 +36,7 @@ class InstructorAuthController extends Controller
 
             $token = JWTAuth::fromUser($user);
 
-            return response()->json([
-                'message' => 'Instructor registered successfully',
-                'data' => [
-                    'instructor' => $user,
-                    'token' => $token
-                ]
-            ]);
+            return [$token, $user->refresh_token];
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Registration failed',

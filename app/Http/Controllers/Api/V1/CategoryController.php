@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Repositories\CategoryRepositoryInterface;
 use App\Traits\ResponseTraits;
+use Symfony\Component\HttpFoundation\Response;
 
 class CategoryController extends Controller
 {
@@ -21,7 +22,7 @@ class CategoryController extends Controller
     public function index()
     {
         $categories = $this->categoryRepository->all();
-        return $this->successResponse('Categories retrieved successfully', $categories, 200);
+        return $this->successResponse('Categories retrieved successfully', $categories, Response::HTTP_OK);
     }
 
     public function store(Request $request)
@@ -42,7 +43,7 @@ class CategoryController extends Controller
             return $this->errorResponse('Category not found', '', 404);
         }
 
-        return $this->successResponse('Category retrieved successfully', $category, 200);
+        return $this->successResponse('Category retrieved successfully', $category,  Response::HTTP_OK);
     }
 
     public function update(Request $request, $id)
@@ -58,7 +59,7 @@ class CategoryController extends Controller
 
         $this->categoryRepository->update($category, $data);
 
-        return $this->successResponse('Category updated successfully', $category, 200);
+        return $this->successResponse('Category updated successfully', $category,  Response::HTTP_OK);
     }
 
     public function destroy($id)
@@ -70,6 +71,6 @@ class CategoryController extends Controller
 
         $this->categoryRepository->delete($category);
 
-        return $this->successResponse('Category deleted successfully', null, 200);
+        return $this->successResponse('Category deleted successfully', null,  Response::HTTP_OK);
     }
 }

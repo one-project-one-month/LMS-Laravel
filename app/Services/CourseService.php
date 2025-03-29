@@ -2,19 +2,19 @@
 
 namespace App\Services;
 
-use App\Http\Resources\CourseResource;
 use App\Jobs\RequestCreateCourse;
-use App\Models\Course;
 use App\Repositories\course\CourseRepositoryInterface;
 use App\Traits\ResponseTraits;
 use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
+use Symfony\Component\HttpFoundation\File\Exception\CannotWriteFileException;
 use Tymon\JWTAuth\Facades\JWTAuth;
+
+use function PHPUnit\Framework\throwException;
 
 class CourseService
 {
@@ -50,7 +50,7 @@ class CourseService
         if ($isEnrolled or Gate::allows("course_details", $course)) {
             $canAccessCourse = true;
         } else {
-            // no account state
+            // no account saturation
             $canAccessCourse = false;
         }
 
@@ -62,11 +62,10 @@ class CourseService
 
         $data = Arr::except($data, ["thumbnail"]);
         $image = Arr::only($data, ['thumbnail']);
-
         $user = JWTAuth::parseToken()->authenticate();
         $id = $user->instructor->id;
 
-        // Get the uploaded file from thel 'thumbnail' key
+        // Get the uploaded file from the 'thumbnail' key
         $file = $image['thumbnail'];
         $path = $this->storeThumbnail($file, $data["course_name"]);
         if ($path) {
@@ -74,12 +73,11 @@ class CourseService
             $course = $this->courseRepository->store($data);
             return $course;
         }
+        return throw new Exception("Failed to store image");
     }
+
     public function updateThumbnail($image, $id)
     {
-
-
-
         $course = $this->courseRepository->show($id);
 
         $oldPath = str_replace("/", "\\", $course->thumbnail);
@@ -90,24 +88,16 @@ class CourseService
         $path = $this->storeThumbnail($image, $course->course_name);
 
         $course = $this->courseRepository->update($path, $id);
-        return $course;
+        return $course->thumbnail;
     }
 
     public function update($data, $id)
     {
-
-
-
         //! disable photo update
         if (key_exists("thumbnail", $data)) {
-
             $data = Arr::except($data, "thumbnail");
         }
-
         $course = $this->courseRepository->update($data, $id);
-
-
-
         return $course;
     }
 
@@ -115,48 +105,41 @@ class CourseService
     public function publish($is_available, $id)
     {
         $data = ["is_available" => $is_available];
-        if ($is_available) {
-            $course =  $this->courseRepository->update($data,  $id);
-
-            return $course;
-        } else {
+        if (!$is_available) {
             throw new BadRequestException("Publish request must be true");
         }
+        $course =  $this->courseRepository->update($data,  $id);
+        return $course;
     }
     public function unpublish($is_available, $id)
     {
         $data = ["is_available" => $is_available];
-        if (!$is_available) {
-            $course =  $this->courseRepository->update($data,  $id);
-
-            return $course;
-        } else {
+        if ($is_available) {
             throw new BadRequestException("Unpublish request must be false");
-        }
+        } 
+        $course =  $this->courseRepository->update($data,  $id);
+        return $course;
     }
     public function destroy($id)
     {
         $this->courseRepository->destroy($id);
     }
 
-    public function requestAdmin($id)
+    public function request($id)
     {
         $course  = $this->courseRepository->show($id);
         RequestCreateCourse::dispatch($course);
     }
     public function complete($studentId, $courseId)
     {
-
-
-
-
-
         $course = $this->courseRepository->show($courseId);
         if (is_enrolled($studentId, $courseId)) {
-            if (Gate::allows("completeCourse", $course)) {
-                DB::table('enrollments')->where("user_id", $studentId)->where("course_id", $course->id)->update(["is_completed" => true]);
-                return true;
+            if (!Gate::allows("completeCourse", $course)) {
+
+                return false;
             }
+            $this->courseRepository->complete($studentId, $courseId);
+            return true;
         } else {
             return false;
         }

@@ -26,8 +26,7 @@ class InstructorController extends Controller
 
         return $this->successResponse(
             'Instructors retrieved successfully',
-            InstructorResource::collection($instructors),
-            200
+            InstructorResource::collection($instructors)
         );
     }
 
@@ -40,8 +39,8 @@ class InstructorController extends Controller
 
         return $this->successResponse(
             'Instructor retrieved successfully',
-            new InstructorResource($instructor),
-            200
+            new InstructorResource($instructor)
+          
         );
     }
 
@@ -95,8 +94,7 @@ class InstructorController extends Controller
 
         return $this->successResponse(
             'Instructor updated successfully',
-            new InstructorResource($instructor),
-            200
+            new InstructorResource($instructor)
         );
     }
 
@@ -109,7 +107,7 @@ class InstructorController extends Controller
 
         $this->instructorRepository->delete($instructor);
 
-        return $this->successResponse('Instructor deleted successfully', null, 200);
+        return $this->successResponse('Instructor deleted successfully', null);
     }
 
     public function suspend($id)
@@ -121,6 +119,6 @@ class InstructorController extends Controller
 
         $this->instructorRepository->suspend($instructor);
 
-        return $this->successResponse('Instructor suspended successfully', null, 200);
+        return $this->successResponse('Instructor suspended successfully', null);
     }
 }

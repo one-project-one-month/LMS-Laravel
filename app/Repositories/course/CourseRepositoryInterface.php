@@ -11,6 +11,5 @@ interface CourseRepositoryInterface
 
     public function destroy($id);
     public function show($id);
-    public function requestAdmin();
-    public function complete();
+    public function complete($studentId , $courseId);
 }
