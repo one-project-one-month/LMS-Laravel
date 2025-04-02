@@ -15,15 +15,15 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('test', function (Request $request) {
 
-    $cookie = $request->cookie("test");
-    return response()->json(['message' => 'Hello scantun', "cookie" => $cookie , "user" => auth()->user()])->cookie("test", "cookie", 1);
+    $cookie = $request->cookie("refreshToken");
+    return response()->json(['message' => 'Hello scantun', "cookie" => $cookie , "user" => auth()->user()]);
 })->middleware("jwt.auth");
 // Route::post("/v1/auth/register",[AuthController::class , "test"]);
 Route::prefix('v1')->group(function () {
     Route::post("/auth/register", [AuthController::class, "register"]);
     Route::post("/auth/refresh", [AuthController::class, "refreshToken"]);
     Route::post("/auth/login", [AuthController::class, "login"]);
-    Route::delete("/auth/logout", [AuthController::class, "destroy"])->middleware('jwt.auth');
+    Route::post("/auth/logout", [AuthController::class, "logout"])->middleware('jwt.auth');
 
     // User Profile Photo Update
     Route::post('/users/{user}/profile-photo', UpdateProfilePhotoController::class)->middleware('jwt.auth');
@@ -38,7 +38,7 @@ Route::prefix('v1')->group(function () {
 
     // instructor
     Route::get('/instructors', [InstructorController::class, 'index']);
-    Route::get('/instructors/{instructor}', [InstructorController::class, 'show'])->middleware(['jwt.auth']);
+    Route::get('/instructors/{instructor}', [InstructorController::class, 'show'])->middleware(['jwt.auth'])->name("instructor.show");
     Route::post('/instructors', [InstructorController::class, 'store'])->middleware(['jwt.auth']);
     Route::put('/instructors/{instructor}', [InstructorController::class, 'update'])->middleware(['jwt.auth']);
     Route::delete('/instructors/{instructor}', [InstructorController::class, 'destroy'])->middleware(['jwt.auth']);

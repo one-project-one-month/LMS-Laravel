@@ -217,7 +217,7 @@ return [
     |
     */
 
-    'blacklist_enabled' => env('JWT_BLACKLIST_ENABLED', false), // config for refresh expired jwt token
+    'blacklist_enabled' => env('JWT_BLACKLIST_ENABLED', true), 
 
     /*
     | -------------------------------------------------------------------------

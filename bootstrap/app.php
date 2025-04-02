@@ -9,7 +9,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\UnauthorizedException;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -44,6 +46,13 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 403);
         });
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
+            $routeName = Route::currentRouteName();
+            if($routeName == "instructor.show"){
+                return response()->json([
+                    "message" => "Instructor is Not found",
+                    "error" => $e->getMessage()
+                ], Response::HTTP_NOT_FOUND);
+            }
             if ($request->is("api/courses/*")) {
                 return response()->json([
                     "message" => "Course is Not found",

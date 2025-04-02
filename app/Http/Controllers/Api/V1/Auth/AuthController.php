@@ -55,10 +55,10 @@ class AuthController extends Controller
         }
         $new_refresh_token = generateRefreshToken();
 
-        $user->refreshToken->update(["refresh_token" => $new_refresh_token, "expired_at" => now()->addMinutes(1)]);
+        $user->refreshToken->update(["refresh_token" => $new_refresh_token, "expired_at" => now()->addMinutes(10)]);
 
 
-        $newToken = JWTAuth::refresh($token);
+        $newToken = JWTAuth::fromUser($user);
 
         // JWTAuth::invalidate($token); // i think this is no need cause refresh is auto invalid old token
         return $this->successResponseWithToken(message: "Token Refresh Successfully", token: $newToken)->cookie("refreshToken", $new_refresh_token, 60 * 24 * 7, null, null, false, true);
@@ -83,27 +83,27 @@ class AuthController extends Controller
     public function login(StudentLoginRequest $request)
     {
 
-        $credentials = $request->validated(["email", "password"]); //check validated with keys array is working or not
+        $credentials = $request->safe()->only(['email', 'password']);
+
         if (!$token = JWTAuth::attempt($credentials)) {
             return response()->json([
                 'message' => 'Invalid credentials',
             ], 401);
         }
 
-        $user = User::where("email", $credentials["email"]);
+        $user = User::where("email", $credentials["email"])->first();
         $refresh_token = generateRefreshToken();
-        if (!$user->refresh_token) {
-            $refresh_token =  RefreshToken::create(["refresh_token" => $refresh_token]);
-            $user->refreshToken()->attach($refresh_token->id);
+        if (!$user->refreshToken) {
+            $user->refreshToken()->create(["refresh_token" => $refresh_token, "expired_at" => now()->addMinutes(10)]);
         }
-        $user->refresh_token()->update(["refresh_token" => $refresh_token, "expired_at" => now()->addMinutes(1)]);
+        $user->refreshToken()->update(["refresh_token" => $refresh_token, "expired_at" => now()->addMinutes(10)]);
         return $this->successResponseWithToken(message: "Login successfully", token: $token,)->cookie("refreshToken", $refresh_token, 60 * 24 * 7, null, null, false, true);
     }
     public function logout()
     {
 
         JWTAuth::parseToken()->invalidate();
-        auth()->user->refresh_token->delete();
+        auth()->user()->refreshToken()->delete();
         return $this->successResponse(message: "Logout successfully");
     }
 }
