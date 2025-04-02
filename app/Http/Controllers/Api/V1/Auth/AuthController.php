@@ -26,32 +26,40 @@ class AuthController extends Controller
 
 
 
+
     public function refreshToken(Request $request)
     {
         $refresh_token = $request->cookie("refreshToken");
         $token = JWTAuth::getToken();
+
+
         if (!$token) {
             return response()->json([
                 'message' => 'Token not provided'
             ], Response::HTTP_UNAUTHORIZED);
         }
 
+
+
         $refresh_query = RefreshToken::where("refresh_token", $refresh_token)->first();
-        return $refresh_query->isExpired();
+
+
         if ($refresh_query->isExpired()) {
             return $this->errorResponse(message: "Refresh Token is expired", status: Response::HTTP_FORBIDDEN);
         }
 
-        $user = $refresh_query->user();
+
+        $user = $refresh_query->user;
         if (!$user) {
             $this->errorResponse(message: "Invalid Refresh_token", status: Response::HTTP_NOT_FOUND);
         }
         $new_refresh_token = generateRefreshToken();
 
-        $user->refresh_token->update(["refresh_token" => $new_refresh_token, "expired_at" => now()->addMinutes(1)]);
+        $user->refreshToken->update(["refresh_token" => $new_refresh_token, "expired_at" => now()->addMinutes(1)]);
 
 
         $newToken = JWTAuth::refresh($token);
+
         // JWTAuth::invalidate($token); // i think this is no need cause refresh is auto invalid old token
         return $this->successResponseWithToken(message: "Token Refresh Successfully", token: $newToken)->cookie("refreshToken", $new_refresh_token, 60 * 24 * 7, null, null, false, true);
     }
@@ -64,6 +72,7 @@ class AuthController extends Controller
         if ($request->input("role") === "instructor") {
             [$token, $refresh_token] =   app(InstructorAuthController::class)->register($request);
 
+            // return response()->json(["token" => $token, "refresh_token" => $refresh_token]);
             return $this->successResponseWithToken(message: "Instructor registered successfully", token: $token, status: Response::HTTP_CREATED)->cookie("refreshToken", $refresh_token, 60 * 24 * 7, null, null, false, true);
         } elseif ($request->input("role") === "student") {
             [$token, $refresh_token] =   app(StudentAuthController::class)->register($request);

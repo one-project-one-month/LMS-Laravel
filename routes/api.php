@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Auth\AdminController;
-use App\Http\Controllers\Api\V1\Auth\InstructorAuthController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CourseController;
@@ -13,12 +12,12 @@ use App\Http\Controllers\Api\V1\StudentController;
 use App\Http\Controllers\Api\V1\UpdateProfilePhotoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Tymon\JWTAuth\Facades\JWTAuth;
 
 Route::post('test', function (Request $request) {
+
     $cookie = $request->cookie("test");
-    return response()->json(['message' => 'Hello scantun', "cookie" => $cookie])->cookie("test", "cookie", 1);
-});
+    return response()->json(['message' => 'Hello scantun', "cookie" => $cookie , "user" => auth()->user()])->cookie("test", "cookie", 1);
+})->middleware("jwt.auth");
 // Route::post("/v1/auth/register",[AuthController::class , "test"]);
 Route::prefix('v1')->group(function () {
     Route::post("/auth/register", [AuthController::class, "register"]);

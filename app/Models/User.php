@@ -39,7 +39,7 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsTo(Role::class);
     }
-    public function refresh_token()
+    public function refreshToken()
     {
         return $this->hasOne(RefreshToken::class);
     }
@@ -88,10 +88,9 @@ class User extends Authenticatable implements JWTSubject
     }
     protected static function booted(): void
     {
-        static::created(function (User $user) {
-            
+        static::created(function (User $user) {    
             $refresh_token = Str::random(16);
-            $user->refresh_token()->create([
+            $user->refreshToken()->create([
                 'refresh_token' => $refresh_token,
             ]);
         });

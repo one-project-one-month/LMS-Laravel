@@ -12,12 +12,12 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
+        {
         Schema::create('refresh_tokens', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
             $table->string('refresh_token')->unique();
-            $table->timestamp('expired_at')->default(now()->addMinutes(1));
+            $table->timestamp('expired_at')->nullable();
             $table->timestamps();   
         });     
     }

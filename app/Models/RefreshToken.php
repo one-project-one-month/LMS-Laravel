@@ -16,4 +16,11 @@ class RefreshToken extends Model
     {
         return now()->greaterThan($this->expired_at);
     }
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($token) {
+            $token->expired_at = now()->addMinutes(30); // Auto-set expiration time
+        });
+    }
 }

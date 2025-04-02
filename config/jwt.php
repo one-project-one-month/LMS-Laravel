@@ -129,7 +129,7 @@ return [
     |
     | Specify the hashing algorithm that will be used to sign the token.
     |
-    */
+        */
 
     'algo' => env('JWT_ALGO', Tymon\JWTAuth\Providers\JWT\Provider::ALGO_HS256),
 
@@ -217,7 +217,7 @@ return [
     |
     */
 
-    'blacklist_enabled' => env('JWT_BLACKLIST_ENABLED', true),
+    'blacklist_enabled' => env('JWT_BLACKLIST_ENABLED', false), // config for refresh expired jwt token
 
     /*
     | -------------------------------------------------------------------------
