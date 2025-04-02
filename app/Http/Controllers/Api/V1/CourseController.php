@@ -99,8 +99,6 @@ class CourseController extends Controller
     //* delete course by instructor with id
     public function destroy($courseId): JsonResponse
     {
-
-
         $this->courseService->destroy($courseId);
         return $this->successResponse("delete successfully", status: Response::HTTP_NO_CONTENT);
     }

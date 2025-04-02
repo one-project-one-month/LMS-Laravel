@@ -37,7 +37,8 @@ class AuthController extends Controller
         }
 
         $refresh_query = RefreshToken::where("refresh_token", $refresh_token)->first();
-        if ($refresh_query->expires_at < now()) {
+        return $refresh_query->isExpired();
+        if ($refresh_query->isExpired()) {
             return $this->errorResponse(message: "Refresh Token is expired", status: Response::HTTP_FORBIDDEN);
         }
 
@@ -47,7 +48,7 @@ class AuthController extends Controller
         }
         $new_refresh_token = generateRefreshToken();
 
-        $user->refresh_token->update(["refresh_token" => $new_refresh_token]);
+        $user->refresh_token->update(["refresh_token" => $new_refresh_token, "expired_at" => now()->addMinutes(1)]);
 
 
         $newToken = JWTAuth::refresh($token);
@@ -86,7 +87,7 @@ class AuthController extends Controller
             $refresh_token =  RefreshToken::create(["refresh_token" => $refresh_token]);
             $user->refreshToken()->attach($refresh_token->id);
         }
-        $user->refresh_token()->update(["refresh_token" => $refresh_token]);
+        $user->refresh_token()->update(["refresh_token" => $refresh_token, "expired_at" => now()->addMinutes(1)]);
         return $this->successResponseWithToken(message: "Login successfully", token: $token,)->cookie("refreshToken", $refresh_token, 60 * 24 * 7, null, null, false, true);
     }
     public function logout()

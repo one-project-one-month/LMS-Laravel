@@ -12,4 +12,8 @@ class RefreshToken extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function isExpired()
+    {
+        return now()->greaterThan($this->expired_at);
+    }
 }
