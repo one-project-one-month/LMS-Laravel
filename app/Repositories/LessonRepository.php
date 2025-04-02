@@ -20,7 +20,7 @@ class LessonRepository
     public function show(int $courseId, int $lessonId): Lesson
     {
         $course = Course::find($courseId);
-        $lesson = Lesson::find($lessonId);
+        $lesson = Lesson::findOrFail($lessonId);
 
         $this->validateLessonBelongsToCourse($course, $lesson);
 
@@ -80,10 +80,10 @@ class LessonRepository
     // validate lesson belongs to course
     protected function validateLessonBelongsToCourse(Course $course, Lesson $lesson)
     {
-        if ($course->id != $lesson->course_id) {
-            abort(response()->json([
-                'error' => "Lesson not found in $course->course_name.",
-            ], 404));
-        }
+        // if ($course->id != $lesson->course_id) {
+        //     abort(response()->json([
+        //         'error' => "Lesson not found in $course->course_name.",
+        //     ], 404));
+        // }
     }
 }

@@ -33,9 +33,9 @@ class InstructorController extends Controller
     public function show($id)
     {
         $instructor = $this->instructorRepository->find($id, ['user', 'courses']);
-        if (!$instructor) {
-            return $this->errorResponse('Instructor not found', '', 404);
-        }
+        // if (!$instructor) {
+        //     return $this->errorResponse('Instructor not found', '', 404);
+        // }
 
         return $this->successResponse(
             'Instructor retrieved successfully',

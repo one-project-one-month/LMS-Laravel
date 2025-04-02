@@ -53,6 +53,12 @@ return Application::configure(basePath: dirname(__DIR__))
                     "error" => $e->getMessage()
                 ], Response::HTTP_NOT_FOUND);
             }
+            if($routeName == "lesson.show"){
+                return response()->json([
+                    "message" => "Lesson is Not found",
+                    "error" => $e->getMessage()
+                ], Response::HTTP_NOT_FOUND);
+            }
             if ($request->is("api/courses/*")) {
                 return response()->json([
                     "message" => "Course is Not found",
@@ -71,12 +77,8 @@ return Application::configure(basePath: dirname(__DIR__))
                     "error" => $e->getMessage()
                 ], 404);
             }
-            if ($request->is("api/lessons/*")) {
-                return response()->json([
-                    "message" => "Lesson is Not found",
-                    "error" => $e->getMessage()
-                ], 404);
-            }
+
+   
 
             // return response()->json([
             //     "message" => "Resource not found",

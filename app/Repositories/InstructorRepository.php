@@ -15,9 +15,10 @@ class InstructorRepository implements InstructorRepositoryInterface
             ->paginate($perPage);
     }
 
+
     public function find(int $id, array $relations = []): ?Instructor
     {
-        return Instructor::with($relations)->find($id);
+        return Instructor::with($relations)->findOrFail($id);
     }
 
     public function create(array $data): Instructor

@@ -113,9 +113,9 @@ class AdminController extends Controller
     {
         $instructors = $this->dashboardService->getAllInstructors($request);
 
-        if ($instructors->isEmpty()) {
-            return errorResponse("Instructors not found.");
-        }
+        // if ($instructors->isEmpty()) {
+        //     return errorResponse("Instructors not found.");
+        // }
 
         $instructors = $this->paginateFormat(InstructorResource::collection($instructors));
 
