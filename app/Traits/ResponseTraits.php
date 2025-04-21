@@ -21,11 +21,12 @@ trait ResponseTraits
 
         ], $status);
     }
-    public function successResponseWithToken($message, $token = null, $status = Response::HTTP_OK)
+    public function successResponseWithToken($message, $token = null, $refresh_token = null, $status = Response::HTTP_OK)
     {
         return response()->json([
             "message" => $message,
             "token" => $token,
+            "refreshToken" => $refresh_token
 
         ], $status);
     }

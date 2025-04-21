@@ -72,7 +72,7 @@ class Course extends Model
 
         $query->when($filter['category'] ?? false, function ($query, $value) {
             $query->whereHas('category', function ($query) use ($value) {
-                $query->where('name', 'like', '%' . $value . '%');
+                $query->where("id" , $value)->orWhere('name', 'like', '%' . $value . '%');
             });
         });
         $query->when($filter['instructor'] ?? false, function ($query, $value) {
@@ -84,5 +84,6 @@ class Course extends Model
 
             $query->whereBetween('price', [$value - 50, $value + 50]);
         });
+       
     }
 }

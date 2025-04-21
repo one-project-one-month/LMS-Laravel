@@ -84,8 +84,8 @@ class AuthController extends Controller
     {
 
         $credentials = $request->safe()->only(['email', 'password']);
-
-        if (!$token = JWTAuth::attempt($credentials)) {
+        $token = JWTAuth::attempt($credentials);
+        if (!$token) {
             return response()->json([
                 'message' => 'Invalid credentials',
             ], 401);
@@ -97,7 +97,13 @@ class AuthController extends Controller
             $user->refreshToken()->create(["refresh_token" => $refresh_token, "expired_at" => now()->addMinutes(10)]);
         }
         $user->refreshToken()->update(["refresh_token" => $refresh_token, "expired_at" => now()->addMinutes(10)]);
-        return $this->successResponseWithToken(message: "Login successfully", token: $token,)->cookie("refreshToken", $refresh_token, 60 * 24 * 7, null, null, false, true);
+        return $this->successResponseWithToken(message: "Login successfully", token: $token, refresh_token: $refresh_token)->cookie("refreshToken", $refresh_token, 60 * 24 * 7, null, null, false, true);
+    }
+    public function profile()
+    {
+        $user =   auth()->user();
+        $userRole = get_role_name($user->role_id);
+        return $this->successResponse(message: "Retrieve profile successfully", data: [...$user->toArray() , "roleName" => $userRole ]);
     }
     public function logout()
     {

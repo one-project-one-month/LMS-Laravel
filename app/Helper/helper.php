@@ -12,6 +12,10 @@ function get_role_id($role)
     $role_id = Role::where("role", $role)->first()->id;
     return $role_id;
 }
+function get_role_name ($id){
+    $role_name = Role::findorFail($id)->role;
+    return $role_name;
+}
 
 function is_($role)
 {

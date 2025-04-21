@@ -12,11 +12,13 @@ use App\Models\Lesson;
 use App\Models\Student;
 use Exception;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 
 class DatabaseSeeder extends Seeder
 {
+
     /**
      * Seed the application's database.
      */
@@ -38,7 +40,22 @@ class DatabaseSeeder extends Seeder
             echo $e->getMessage();
         }
         Student::factory(5)->create();
-        Category::factory(3)->create();
+        $categories = [
+            ['id' => 1, 'name' => 'Computer Science'],
+            ['id' => 2, 'name' => 'C#'],
+            ['id' => 3, 'name' => 'JavaScript'],
+            ['id' => 4, 'name' => 'React'],
+            ['id' => 5, 'name' => 'NextJS'],
+            ['id' => 6, 'name' => 'PHP'],
+            ['id' => 7, 'name' => 'Laravel'],
+            ['id' => 8, 'name' => 'NestJs'],
+            ['id' => 9, 'name' => 'Go'],
+            ['id' => 10, 'name' => 'DevOps'],
+        ];
+
+     foreach ($categories as $category) {
+            DB::table('categories')->insert($category);
+        }
 
         Course::factory(4)->create();
         $this->call(LessonSeeder::class);

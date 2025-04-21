@@ -24,6 +24,8 @@ Route::prefix('v1')->group(function () {
     Route::post("/auth/refresh", [AuthController::class, "refreshToken"]);
     Route::post("/auth/login", [AuthController::class, "login"]);
     Route::post("/auth/logout", [AuthController::class, "logout"])->middleware('jwt.auth');
+    Route::get("/auth/me" , [AuthController::class , "profile"])->middleware("jwt.auth");
+
 
     // User Profile Photo Update
     Route::post('/users/{user}/profile-photo', UpdateProfilePhotoController::class)->middleware('jwt.auth');
@@ -55,19 +57,19 @@ Route::prefix('v1')->group(function () {
 
 
     // courses api
+    Route::get("/courses/my-courses" , [CourseController::class , "myCourse"])->middleware("jwt.auth");
     Route::get("/courses", [CourseController::class, "index"]);
     Route::post("/courses", [CourseController::class, "store"])->middleware(["jwt.auth"]);
     Route::get("/courses/{course}", [CourseController::class, "show"]);
     Route::put("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
     Route::patch("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
     Route::delete("/courses/{id}", [CourseController::class, "destroy"])->middleware(["jwt.auth", "can:delete,course"]);
-
     Route::patch("/courses/unpublish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "can:update,course"]);
     Route::patch("/courses/publish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "admin"]);
     Route::post("/courses/{course}/thumbnail", [CourseController::class, "updateThumbnail"])->middleware(["jwt.auth","can:update,course"]);
     Route::patch("/courses/{course}/complete", [CourseController::class, "complete"])->middleware(["jwt.auth","can:update,course"]);
     Route::get("/courses/{course}/request", [CourseController::class, "request"])->middleware("jwt.auth", "can:update,course");
-
+//make route for courses that is enrolled
 
     // social-link api
     Route::get('courses/{course}/social-link', [SocialLinkController::class, 'show'])->middleware('jwt.auth');

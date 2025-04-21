@@ -37,6 +37,17 @@ class CourseController extends Controller
     
         return $this->successResponse(message:"Course fetched successfully" , data:$this->paginateFormat($result));
     }
+    public function myCourse(Request $request){
+    
+        $user = auth()->user();
+        $courses = $user->student->courses()->with("instructorUser")->get();
+       
+        // foreach ($courses as $course) {
+        //  $user =  $course->instructorUser;
+        // $data = [ ...$data , "instructor" => $user ] ;
+        // }
+        return $this->successResponse(message:"My course fetched successfully" , data:$courses);
+    }
 
     /**
      *  store course
