@@ -35,8 +35,8 @@ class CourseFactory extends Factory
                 "https://images.pexels.com/photos/4145194/pexels-photo-4145194.jpeg", // Teacher with students
             ]),
             "duration" => $this->faker->randomElement(["7hours", "5hours"]),
-            "original_price" => $this->faker->randomElement(["$200", "$300", "$600"]),
-            "current_price" => $this->faker->randomElement(["$200", "$300", "$600"]),
+            "original_price" => $this->faker->randomElement(["200", "300", "600"]),
+            "current_price" => $this->faker->randomElement(["200", "300", "600"]),
             "category_id" => Category::factory(),
             "instructor_id" => Instructor::factory(),
             "is_available" => true

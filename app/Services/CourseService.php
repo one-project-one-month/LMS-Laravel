@@ -37,15 +37,22 @@ class CourseService
     }
     public function getById($id)
     {
+        $token = request()->bearerToken();
+
         $course = $this->courseRepository->show($id);
-        $user = JWTAuth::parseToken()->authenticate();
         $isEnrolled = false;
         $canAccessCourse = false;
-        if (is_("student")) {
+        if ($token) {
 
-            $student =  $user->student;
-            $isEnrolled = is_enrolled($student->id, $course->id);
+            $user = JWTAuth::parseToken()->authenticate();
+            if (is_("student")) {
+
+                $student =  $user->student;
+                $isEnrolled = is_enrolled($student->id, $course->id);
+            }
         }
+
+
 
         if ($isEnrolled or Gate::allows("course_details", $course)) {
             $canAccessCourse = true;
@@ -53,23 +60,21 @@ class CourseService
             // no account saturation
             $canAccessCourse = false;
         }
-
         $result = $this->courseRepository->getCourseDetails($canAccessCourse, $id);
         return $result;
     }
     public function create($data)
     {
 
-        $data = Arr::except($data, ["thumbnail"]);
-        $image = Arr::only($data, ['thumbnail']);
         $user = JWTAuth::parseToken()->authenticate();
         $id = $user->instructor->id;
 
         // Get the uploaded file from the 'thumbnail' key
-        $file = $image['thumbnail'];
+        $file = $data['thumbnail'];
         $path = $this->storeThumbnail($file, $data["course_name"]);
         if ($path) {
-            $data = array_merge($data, ["thumbnail" => $path], ["instructor_id" => $id]);
+            $data['thumbnail'] = $path;
+            $data = array_merge($data, ["instructor_id" => $id]);
             $course = $this->courseRepository->store($data);
             return $course;
         }
@@ -116,7 +121,7 @@ class CourseService
         $data = ["is_available" => $is_available];
         if ($is_available) {
             throw new BadRequestException("Unpublish request must be false");
-        } 
+        }
         $course =  $this->courseRepository->update($data,  $id);
         return $course;
     }

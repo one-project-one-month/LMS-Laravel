@@ -2,6 +2,7 @@
 
 namespace App\Repositories\course;
 
+use App\Http\Resources\CourseResource;
 use App\Models\Course;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +33,7 @@ class CourseRepository implements CourseRepositoryInterface
                 'limit' => $limit
             ]);
 
-        return  $courses;
+        return  CourseResource::collection($courses);
     }
 
     public function show($id)
