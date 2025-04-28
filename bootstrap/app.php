@@ -14,6 +14,7 @@ use Illuminate\Validation\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -84,6 +85,12 @@ return Application::configure(basePath: dirname(__DIR__))
             //     "message" => "Resource not found",
             //     "error" => $e->getMessage()
             // ], 404);
+        });
+        $exceptions->render(function(TokenExpiredException $e){
+            return response()->json([
+                "message" => "TokenExpired",
+                "error" => $e->getMessage()
+            ], 401);
         });
 
 

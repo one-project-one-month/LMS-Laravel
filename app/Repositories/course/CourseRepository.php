@@ -42,6 +42,7 @@ class CourseRepository implements CourseRepositoryInterface
         return $course;
     }
 
+
     public function getCourseDetails($canAccessCourse, $id)
     {
         if ($canAccessCourse) {
@@ -56,7 +57,10 @@ class CourseRepository implements CourseRepositoryInterface
                 function ($query) {
                     $query->select("users.id", "users.username", "users.profile_photo", "instructors.edu_background");
                 },
-                "category:id,name"
+                "category:id,name",
+                "students" => function ($query) {
+                    $query->select("user.id", "user.username");
+                }
             ])
                 ->where("is_available", true)
                 ->findOrFail($id);

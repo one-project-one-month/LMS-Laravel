@@ -61,6 +61,7 @@ class CourseService
             $canAccessCourse = false;
         }
         $result = $this->courseRepository->getCourseDetails($canAccessCourse, $id);
+  
         return $result;
     }
     public function create($data)

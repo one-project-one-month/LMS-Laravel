@@ -40,13 +40,14 @@ class CourseController extends Controller
     public function myCourse(Request $request){
     
         $user = auth()->user();
-        $courses = $user->student->courses()->with("instructorUser")->get();
+        $courses = $user->student->courses()->filter($request)->with("instructorUser")->get();
        
         // foreach ($courses as $course) {
         //  $user =  $course->instructorUser;
         // $data = [ ...$data , "instructor" => $user ] ;
         // }
-        return $this->successResponse(message:"My course fetched successfully" , data:$courses);
+        $formatCourses = CourseResource::collection($courses);
+        return $this->successResponse(message:"My course fetched successfully" , data:$formatCourses);
     }
 
     /**

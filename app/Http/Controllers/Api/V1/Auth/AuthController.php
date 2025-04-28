@@ -43,7 +43,7 @@ class AuthController extends Controller
 
         $refresh_query = RefreshToken::where("refresh_token", $refresh_token)->first();
 
-
+     
         if ($refresh_query->isExpired()) {
             return $this->errorResponse(message: "Refresh Token is expired", status: Response::HTTP_FORBIDDEN);
         }
@@ -55,13 +55,13 @@ class AuthController extends Controller
         }
         $new_refresh_token = generateRefreshToken();
 
-        $user->refreshToken->update(["refresh_token" => $new_refresh_token, "expired_at" => now()->addMinutes(10)]);
+        $user->refreshToken->update(["refresh_token" => $new_refresh_token, "expired_at" => now()->addMinutes(120)]);
 
 
         $newToken = JWTAuth::fromUser($user);
 
         // JWTAuth::invalidate($token); // i think this is no need cause refresh is auto invalid old token
-        return $this->successResponseWithToken(message: "Token Refresh Successfully", token: $newToken)->cookie("refreshToken", $new_refresh_token, 60 * 24 * 7, null, null, false, true);
+        return $this->successResponseWithToken(message: "Token Refresh Successfully", token: $newToken, refresh_token: $new_refresh_token)->cookie("refreshToken", $new_refresh_token, 60 * 24 * 7, null, null, false, true);
     }
 
 
@@ -96,14 +96,14 @@ class AuthController extends Controller
         if (!$user->refreshToken) {
             $user->refreshToken()->create(["refresh_token" => $refresh_token, "expired_at" => now()->addMinutes(10)]);
         }
-        $user->refreshToken()->update(["refresh_token" => $refresh_token, "expired_at" => now()->addMinutes(10)]);
+        $user->refreshToken()->update(["refresh_token" => $refresh_token, "expired_at" => now()->addMinutes(120)]);
         return $this->successResponseWithToken(message: "Login successfully", token: $token, refresh_token: $refresh_token)->cookie("refreshToken", $refresh_token, 60 * 24 * 7, null, null, false, true);
     }
     public function profile()
     {
         $user =   auth()->user();
         $userRole = get_role_name($user->role_id);
-        return $this->successResponse(message: "Retrieve profile successfully", data: [...$user->toArray() , "roleName" => $userRole ]);
+        return $this->successResponse(message: "Retrieve profile successfully", data: [...$user->toArray(), "roleName" => $userRole]);
     }
     public function logout()
     {

@@ -28,13 +28,10 @@ class CourseResource extends JsonResource
             "original_price" => $this->original_price,
             "current_price" => $this->current_price ?? $this->original_price,
             "category" => CategoryResource::make($this->whenLoaded("category")),
-            "instructor" =>$this->instructorUser ,
-            "instructorName" => $this->instructorUser->username,
-            "instructorProfile" => $this->instructorUser->profile_photo ? url($this->instructorUser->profile_photo) : "https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg?t=st=1745687290~exp=1745690890~hmac=8a900b8b8cee8d963d5f5128578627883c9e4fca9928a3261b1ceb09328bb389&w=740",
-            "instructorEducation" => $this->instructorUser->edu_background,
-            "createdAt" => $this->created_at,
-            "updatedAt" => $this->updated_at,
-
+            "instructor_user" => InstructorUserResource::make($this->instructorUser),
+            "created_at" => $this->created_at,
+            "updated_at" => $this->updated_at,
+            "students" =>  $this->students,
             "lessons" =>  LessonResource::collection($this->whenLoaded("lessons")),
 
             "socialLinks" => SocialLinkResource::make($this->whenLoaded("social_link"))
