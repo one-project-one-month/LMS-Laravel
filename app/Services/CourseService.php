@@ -61,18 +61,20 @@ class CourseService
             $canAccessCourse = false;
         }
         $result = $this->courseRepository->getCourseDetails($canAccessCourse, $id);
-  
+
         return $result;
     }
-    public function create($data)
+    public function create($data, $path)
     {
 
         $user = JWTAuth::parseToken()->authenticate();
         $id = $user->instructor->id;
 
         // Get the uploaded file from the 'thumbnail' key
-        $file = $data['thumbnail'];
-        $path = $this->storeThumbnail($file, $data["course_name"]);
+        // dd($file);
+        // $path = $this->storeThumbnail($file, $data["course_name"]);
+        // $path = $file->store("thumbnails" , "public");
+
         if ($path) {
             $data['thumbnail'] = $path;
             $data = array_merge($data, ["instructor_id" => $id]);
@@ -150,9 +152,15 @@ class CourseService
             return false;
         }
     }
-    public function  storeThumbnail($image, $course_name)
+    public function  storeThumbnail($file, $course_name)
     {
-        $path = $image->storeAs('thumbnails', time() . "$" . auth()->id()  .  Str::snake($course_name)  . "." . $image->getClientOriginalExtension(), 'public');
-        return $path;
+        try {
+
+            $path =  $file->storeAs('thumbnails', time() . "$" . auth()->id()  .  Str::snake($course_name)  . "." . $image->getClientOriginalExtension(), 'public');
+            return $path;
+        } catch (Exception $e) {
+
+            return $e;
+        }
     }
 }

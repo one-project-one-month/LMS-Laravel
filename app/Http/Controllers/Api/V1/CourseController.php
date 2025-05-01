@@ -22,7 +22,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class CourseController extends Controller
 {
-    use ResponseTraits,customPaginationFormat;
+    use ResponseTraits, customPaginationFormat;
 
     public function __construct(protected CourseService $courseService) {}
 
@@ -34,20 +34,22 @@ class CourseController extends Controller
     public function index(Request $request)
     {
         $result = $this->courseService->getAll($request);
-    
-        return $this->successResponse(message:"Course fetched successfully" , data:$this->paginateFormat($result));
+
+        return $this->successResponse(message: "Course fetched successfully", data: $this->paginateFormat($result));
     }
-    public function myCourse(Request $request){
-    
+    public function myCourse(Request $request)
+    {
+
         $user = auth()->user();
-        $courses = $user->student->courses()->filter($request)->with("instructorUser")->get();
-       
+        $courses = $user->student->courses()->filter($request)->with("instructorUser" , "category")->get();
+        // $courses = $user->student->courses()
+
         // foreach ($courses as $course) {
         //  $user =  $course->instructorUser;
         // $data = [ ...$data , "instructor" => $user ] ;
         // }
         $formatCourses = CourseResource::collection($courses);
-        return $this->successResponse(message:"My course fetched successfully" , data:$formatCourses);
+        return $this->successResponse(message: "My course fetched successfully", data: $formatCourses);
     }
 
     /**
@@ -60,7 +62,10 @@ class CourseController extends Controller
     public function store(CourseRequest $courseRequest): JsonResponse
     {
         $data = $courseRequest->validated();
-        $course = $this->courseService->create($data);
+        $file = $courseRequest->file("thumbnail");
+       $path =    $file->store("thumbnails" , "public");
+          dd($path);
+        $course = $this->courseService->create($data, $path);
         return CourseResource::make($course)->additional(["message" => "Course Created Successfully"])->response()->setStatusCode(201);
     }
 
@@ -116,7 +121,7 @@ class CourseController extends Controller
     }
 
     //* get course details base on enrolled or not , instructor ,admin all access
-    public function show($courseId): CourseResource
+    public function show($courseId)
     {
         $course = $this->courseService->getById($courseId);
         return CourseResource::make($course)->additional(["message" => "course retrieve successfully🎉"]);

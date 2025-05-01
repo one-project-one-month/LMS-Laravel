@@ -58,8 +58,8 @@ class CourseRepository implements CourseRepositoryInterface
                     $query->select("users.id", "users.username", "users.profile_photo", "instructors.edu_background");
                 },
                 "category:id,name",
-                "students" => function ($query) {
-                    $query->select("user.id", "user.username");
+                "students"  => function ($query) {
+                    $query->select( "students.id"   );
                 }
             ])
                 ->where("is_available", true)

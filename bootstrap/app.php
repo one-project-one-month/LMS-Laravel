@@ -14,6 +14,7 @@ use Illuminate\Validation\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -87,6 +88,12 @@ return Application::configure(basePath: dirname(__DIR__))
             // ], 404);
         });
         $exceptions->render(function(TokenExpiredException $e){
+            return response()->json([
+                "message" => "TokenExpired",
+                "error" => $e->getMessage()
+            ], 401);
+        });  
+         $exceptions->render(function(UnauthorizedHttpException $e){
             return response()->json([
                 "message" => "TokenExpired",
                 "error" => $e->getMessage()
