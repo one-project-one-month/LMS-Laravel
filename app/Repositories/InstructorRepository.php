@@ -18,7 +18,7 @@ class InstructorRepository implements InstructorRepositoryInterface
 
     public function find(int $id, array $relations = []): ?Instructor
     {
-        return Instructor::with($relations)->findOrFail($id);
+        return Instructor::with($relations)->find($id);
     }
 
     public function create(array $data): Instructor

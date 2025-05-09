@@ -17,7 +17,6 @@ Route::post('test', function (Request $request) {
 
     $cookie = $request->cookie("refreshToken");
     return response()->json(['message' => 'Hello scantun', "cookie" => $cookie, "user" => auth()->user()]);
-
 })->middleware("jwt.auth");
 
 

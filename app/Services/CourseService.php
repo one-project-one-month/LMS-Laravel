@@ -64,7 +64,7 @@ class CourseService
 
         return $result;
     }
-    public function create($data, $path)
+    public function create($data, $file)
     {
 
         $user = JWTAuth::parseToken()->authenticate();
@@ -72,7 +72,7 @@ class CourseService
 
         // Get the uploaded file from the 'thumbnail' key
         // dd($file);
-        // $path = $this->storeThumbnail($file, $data["course_name"]);
+        $path = $this->storeThumbnail($file, $data["course_name"]);
         // $path = $file->store("thumbnails" , "public");
 
         if ($path) {
@@ -156,7 +156,7 @@ class CourseService
     {
         try {
 
-            $path =  $file->storeAs('thumbnails', time() . "$" . auth()->id()  .  Str::snake($course_name)  . "." . $image->getClientOriginalExtension(), 'public');
+            $path =  $file->storeAs('thumbnails', time() . "$" . auth()->id()  .  Str::snake($course_name)  . "." . $file->getClientOriginalExtension(), 'public');
             return $path;
         } catch (Exception $e) {
 

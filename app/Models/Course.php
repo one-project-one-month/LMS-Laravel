@@ -84,5 +84,6 @@ class Course extends Model
 
             $query->whereBetween('price', [$value - 50, $value + 50]);
         });
+        $query->where("is_available" , true);
     }
 }

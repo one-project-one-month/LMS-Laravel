@@ -17,6 +17,7 @@ use App\Http\Requests\StudentLoginRequest;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Http\Requests\InstructorLoginRequest;
 use App\Http\Requests\InstructorRegisterRequest;
+use App\Http\Resources\GeneralUserResource;
 use App\Models\RefreshToken;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -103,7 +104,8 @@ class AuthController extends Controller
     {
         $user =   auth()->user();
         $userRole = get_role_name($user->role_id);
-        return $this->successResponse(message: "Retrieve profile successfully", data: [...$user->toArray(), "roleName" => $userRole]);
+        $user->roleName = $userRole;
+        return $this->successResponse(message: "Retrieve profile successfully", data: GeneralUserResource::make($user ));
     }
     public function logout()
     {

@@ -41,7 +41,7 @@ class CourseController extends Controller
     {
 
         $user = auth()->user();
-        $courses = $user->student->courses()->filter($request)->with("instructorUser" , "category")->get();
+        $courses = $user->student->courses()->filter($request)->with("instructorUser", "category")->get();
         // $courses = $user->student->courses()
 
         // foreach ($courses as $course) {
@@ -63,9 +63,8 @@ class CourseController extends Controller
     {
         $data = $courseRequest->validated();
         $file = $courseRequest->file("thumbnail");
-       $path =    $file->store("thumbnails" , "public");
-          dd($path);
-        $course = $this->courseService->create($data, $path);
+
+        $course = $this->courseService->create($data, $file);
         return CourseResource::make($course)->additional(["message" => "Course Created Successfully"])->response()->setStatusCode(201);
     }
 
