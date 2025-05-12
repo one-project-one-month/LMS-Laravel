@@ -58,13 +58,14 @@ Route::prefix('v1')->group(function () {
 
 
     // courses api
+    //need to develop course when fetch by instructor they need to be show include isAvailable is false
     Route::get("/courses/my-courses", [CourseController::class, "myCourse"])->middleware("jwt.auth");
     Route::get("/courses", [CourseController::class, "index"]);
     Route::post("/courses", [CourseController::class, "store"])->middleware(["jwt.auth"]);
     Route::get("/courses/{course}", [CourseController::class, "show"]);
     Route::put("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
     Route::patch("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
-    Route::delete("/courses/{id}", [CourseController::class, "destroy"])->middleware(["jwt.auth", "can:delete,course"]);
+    Route::delete("/courses/{course}", [CourseController::class, "destroy"])->middleware(["jwt.auth", "can:delete,course"]);
     Route::patch("/courses/unpublish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "can:update,course"]);
     Route::patch("/courses/publish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "admin"]);
     Route::post("/courses/{course}/thumbnail", [CourseController::class, "updateThumbnail"])->middleware(["jwt.auth", "can:update,course"]);

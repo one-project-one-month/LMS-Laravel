@@ -8,6 +8,7 @@ use App\Http\Requests\ImageRequest;
 use App\Http\Resources\CourseCollection;
 use App\Http\Resources\CourseResource;
 use App\Jobs\RequestCreateCourse;
+use App\Models\Course;
 use App\Services\CourseService;
 use App\Traits\customPaginationFormat;
 use App\Traits\ResponseTraits;
@@ -15,6 +16,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\Response;
@@ -113,10 +115,10 @@ class CourseController extends Controller
     }
 
     //* delete course by instructor with id
-    public function destroy($courseId): JsonResponse
+    public function destroy(Course $course): JsonResponse
     {
-        $this->courseService->destroy($courseId);
-        return $this->successResponse("delete successfully", status: Response::HTTP_NO_CONTENT);
+        $this->courseService->destroy($course->id);
+        return $this->successResponse("delete successfully");
     }
 
     //* get course details base on enrolled or not , instructor ,admin all access
