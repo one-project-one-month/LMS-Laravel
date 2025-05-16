@@ -21,6 +21,7 @@ Route::post('test', function (Request $request) {
 
 
 Route::prefix('v1')->group(function () {
+    
     Route::post("/auth/register", [AuthController::class, "register"]);
     Route::post("/auth/refresh", [AuthController::class, "refreshToken"]);
     Route::post("/auth/login", [AuthController::class, "login"]);
@@ -55,7 +56,7 @@ Route::prefix('v1')->group(function () {
     Route::put('/categories/{id}', [CategoryController::class, 'update'])->middleware('jwt.auth');
     Route::patch('/categories/{id}', [CategoryController::class, 'update'])->middleware('jwt.auth');
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy'])->middleware('jwt.auth');
-
+// Route::get("/helo" , fn() => null);
 
     // courses api
     //need to develop course when fetch by instructor they need to be show include isAvailable is false
