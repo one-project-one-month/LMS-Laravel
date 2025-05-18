@@ -128,9 +128,11 @@ class CourseController extends Controller
         return CourseResource::make($course)->additional(["message" => "course retrieve successfully🎉"]);
     }
     //* publish request to admin 
-    public function request($id)
+    public function request(
+        Course $course)
     {
-        $this->courseService->request($id);
+        
+        $this->courseService->request($course->id);
         return $this->successResponse("Successfully request to publish your course");
     }
 

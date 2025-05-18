@@ -71,7 +71,7 @@ Route::prefix('v1')->group(function () {
     Route::patch("/courses/publish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "admin"]);
     Route::post("/courses/{course}/thumbnail", [CourseController::class, "updateThumbnail"])->middleware(["jwt.auth", "can:update,course"]);
     Route::patch("/courses/{course}/complete", [CourseController::class, "complete"])->middleware(["jwt.auth", "can:update,course"]);
-    Route::get("/courses/{course}/request", [CourseController::class, "request"])->middleware("jwt.auth", "can:update,course");
+    Route::post("/courses/{course}/request", [CourseController::class, "request"])->middleware("jwt.auth", "can:update,course");
     //make route for courses that is enrolled
 
     // social-link api
