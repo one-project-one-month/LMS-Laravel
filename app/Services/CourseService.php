@@ -102,9 +102,9 @@ class CourseService
     public function update($data, $id)
     {
         //! disable photo update
-        if (key_exists("thumbnail", $data)) {
-            $data = Arr::except($data, "thumbnail");
-        }
+        // if (key_exists("thumbnail", $data)) {
+        //     $data = Arr::except($data, "thumbnail");
+        // }
         $course = $this->courseRepository->update($data, $id);
         return $course;
     }

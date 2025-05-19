@@ -52,11 +52,11 @@ class LessonController extends Controller
      *  post - /api/courses/:id/lessons/
      *  @param - title, lesson_detail, is_available, ( video_url - get from uploadUrl Api )
      */
-    public function store(LessonRequest $lessonRequest,int $courseId)
+    public function store(LessonRequest $lessonRequest,Course $course)
     {
         $attributes = $lessonRequest->validated();
 
-        $lesson = $this->lessonService->create($attributes,$courseId);
+        $lesson = $this->lessonService->create($attributes,$course->id);
 
         return successResponse("Lesson created successfully.", new LessonResource($lesson),201);
     }

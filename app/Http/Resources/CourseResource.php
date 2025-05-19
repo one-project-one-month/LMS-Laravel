@@ -27,12 +27,13 @@ class CourseResource extends JsonResource
             "duration" => $this->duration,
             "original_price" => $this->original_price,
             "current_price" => $this->current_price ?? $this->original_price,
-            "category" => CategoryResource::make($this->whenLoaded("category")),
+            "category" => CategoryResource::make($this->category),
             "instructor_user" => InstructorUserResource::make($this->instructorUser),
             "created_at" => $this->created_at,
             "updated_at" => $this->updated_at,
             "students" =>  $this->students,
             "lessons" =>  LessonResource::collection($this->whenLoaded("lessons")),
+            "is_available" => $this->is_available,
 
             "socialLinks" => SocialLinkResource::make($this->whenLoaded("social_link"))
         ];

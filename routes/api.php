@@ -64,7 +64,8 @@ Route::prefix('v1')->group(function () {
     Route::get("/courses", [CourseController::class, "index"]);
     Route::post("/courses", [CourseController::class, "store"])->middleware(["jwt.auth"]);
     Route::get("/courses/{course}", [CourseController::class, "show"]);
-    Route::put("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
+    Route::get("/courses/{course}/normal", [CourseController::class, "normal"]);
+    Route::post("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
     Route::patch("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
     Route::delete("/courses/{course}", [CourseController::class, "destroy"])->middleware(["jwt.auth", "can:delete,course"]);
     Route::patch("/courses/unpublish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "can:update,course"]);
@@ -86,7 +87,7 @@ Route::prefix('v1')->group(function () {
 
     // lesson api
     Route::get('/courses/{id}/lessons', [LessonController::class, 'index']);
-    Route::post('/courses/{id}/lessons', [LessonController::class, 'store'])->middleware('jwt.auth', 'can:create,lesson');
+    Route::post('/courses/{course}/lessons', [LessonController::class, 'store'])->middleware('jwt.auth', "instructor");
     Route::get('/courses/{course}/lessons/{lesson}', [LessonController::class, 'show'])->middleware('jwt.auth', 'can:view,lesson')->name("lesson.show");
     Route::put('/courses/{course}/lessons/{lesson}', [LessonController::class, 'update'])->middleware('jwt.auth', 'can:update,lesson');
     Route::delete('/courses/{course}/lessons/{lesson}', [LessonController::class, 'destroy'])->middleware('jwt.auth', 'can:delete,lesson');

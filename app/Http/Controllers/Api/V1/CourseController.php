@@ -16,6 +16,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
@@ -72,9 +73,13 @@ class CourseController extends Controller
 
     //* update course by instructor with id 
     //! not update publish and draft
-    public function update(CourseRequest $courseRequest, $courseId): CourseResource
+    public function update(Request $courseRequest, Course $course)
     {
-        $course =  $this->courseService->update($courseRequest->validated(), $courseId);
+        $data = request()->all();
+        $data = Arr::except($data , "thumbnail");
+        $file = $courseRequest->file("thumbnail");
+        return response()->json(["message"=>"test", "data"=>$data]);
+        $course =  $this->courseService->update( $data , $course->id);
 
 
         return CourseResource::make($course)->additional(["message" => "Course update successfully"]);
@@ -127,11 +132,15 @@ class CourseController extends Controller
         $course = $this->courseService->getById($courseId);
         return CourseResource::make($course)->additional(["message" => "course retrieve successfully🎉"]);
     }
+    public function normal(Course $course)
+    {
+        return CourseResource::make($course)->additional(["message" => "course retrieve successfully🎉"]);
+    }
     //* publish request to admin 
     public function request(
-        Course $course)
-    {
-        
+        Course $course
+    ) {
+
         $this->courseService->request($course->id);
         return $this->successResponse("Successfully request to publish your course");
     }
