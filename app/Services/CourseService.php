@@ -84,9 +84,9 @@ class CourseService
         return throw new Exception("Failed to store image");
     }
 
-    public function updateThumbnail($image, $id)
+    public function updateThumbnail($image, $course)
     {
-        $course = $this->courseRepository->show($id);
+        
 
         $oldPath = str_replace("/", "\\", $course->thumbnail);
         if (File::exists(public_path("storage\\" . $oldPath))) {
@@ -95,7 +95,7 @@ class CourseService
 
         $path = $this->storeThumbnail($image, $course->course_name);
 
-        $course = $this->courseRepository->update($path, $id);
+        $course = $this->courseRepository->updatethumbnailPath($path, $course->id);
         return $course->thumbnail;
     }
 

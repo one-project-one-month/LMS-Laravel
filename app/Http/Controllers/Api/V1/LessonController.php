@@ -11,9 +11,11 @@ use App\Http\Requests\LessonRequest;
 use App\Http\Resources\LessonResource;
 use App\Http\Resources\LessonCollection;
 use App\Http\Requests\LessonUploadVideoRequest;
+use App\Models\Instructor;
 use App\Repositories\LessonRepository;
 use App\Services\LessonService;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class LessonController extends Controller
 {
@@ -34,15 +36,21 @@ class LessonController extends Controller
 
         return successResponse("Lessons retrieved successfully.", new LessonCollection($lessons));
     }
+    public function all()  {
+        $courseId = auth()->user()->instructor->courses->pluck("id");
+        $lessons = Lesson::whereIn("course_id" , $courseId)->paginate(10);
+    //    Lesson::query()->paginate(10);
+        return successResponse("lessons fetch successfully ", $lessons);
+    }
 
     /**
      *  get lesson
      *  get - /api/courses/:id/lessons/:id
      *  @param ( course_id , lesson_id )
      */
-    public function show(Course $course,Lesson $lesson)
+    public function show(Lesson $lesson)
     {
-        $lesson = $this->lessonService->show($course->id, $lesson->id);
+        $lesson = $this->lessonService->show($lesson->id);
 
         return successResponse("Lesson retrieved successfully.", new LessonResource($lesson));
     }
@@ -68,11 +76,11 @@ class LessonController extends Controller
      * @param request,( course_id - optional )
      */
 
-    public function update(LessonRequest $lessonRequest, Course $course, Lesson $lesson)
+    public function update(LessonRequest $lessonRequest, Lesson $lesson)
     {
         $attributes = $lessonRequest->validated();
 
-        $lesson = $this->lessonService->update($attributes,$course->id,$lesson->id);
+        $lesson = $this->lessonService->update($attributes,$lesson->id);
 
         return successResponse("Lesson updated successfully.", new LessonResource($lesson));
     }

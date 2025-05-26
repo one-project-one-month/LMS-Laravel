@@ -73,12 +73,16 @@ class CourseController extends Controller
 
     //* update course by instructor with id 
     //! not update publish and draft
-    public function update(Request $courseRequest, Course $course)
+    public function update(CourseRequest $courseRequest, Course $course)
     {
-        $data = request()->all();
+        $data = $courseRequest->validated();
         $data = Arr::except($data , "thumbnail");
         $file = $courseRequest->file("thumbnail");
-        return response()->json(["message"=>"test", "data"=>$data]);
+        if($file){
+         $this->courseService->updateThumbnail($file , $course);
+
+        }
+        // return response()->json(["message"=>"test", "data"=>$data]);
         $course =  $this->courseService->update( $data , $course->id);
 
 
@@ -95,7 +99,7 @@ class CourseController extends Controller
     }
 
     //* publish course by admin with id
-    public function publish(Request $request, $courseId): JsonResponse
+    public function publish(Request $request,Course $course): JsonResponse
     {
 
         $attr = $request->validate([
@@ -104,18 +108,18 @@ class CourseController extends Controller
         if (!$attr["is_available"]) {
             return $this->errorResponse(message: "Publish course Failed", status: Response::HTTP_BAD_REQUEST);
         }
-        $course =   $this->courseService->publish($attr["is_available"], $courseId);
+        $course =   $this->courseService->unpublish($attr["is_available"], $course->id);
         return $this->successResponse("Course  publish successfully.");
     }
     //* unpublish course by instructor and admin with id
-    public function unpublish(Request $request, $courseId): JsonResponse
+    public function unpublish(Request $request,Course $course): JsonResponse
     {
 
         $attr = $request->validate([
             "is_available" => "boolean"
         ]);
 
-        $this->courseService->publish($attr["is_available"], $courseId);
+        $this->courseService->unpublish($attr["is_available"], $course->id);
         return $this->successResponse("Course  unpublish successfully.");
     }
 

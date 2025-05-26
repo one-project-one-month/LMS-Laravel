@@ -85,6 +85,13 @@ class CourseRepository implements CourseRepositoryInterface
         $course = Course::findOrFail($id);
         $course->update($data);
         return $course;
+    } 
+     public function updatethumbnailPath($path, $id)
+    {
+
+        $course = Course::findOrFail($id);
+        $course->update(["thumbnail" => $path]);
+        return $course;
     }
     public function destroy($id)
     {
