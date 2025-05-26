@@ -13,19 +13,18 @@ class LessonService
     {
         return $this->lessonRepo->all($courseId);
     }
-
-    public function show($courseId,$lessonId)
+    public function show($lessonId)
     {
-        return $this->lessonRepo->show($courseId, $lessonId);
+        return $this->lessonRepo->show( $lessonId);
     }
     public function create($data,$courseId)
     {
         return $this->lessonRepo->create($data, $courseId);
     }
 
-    public function update($data,$courseId,$lessonId)
+    public function update($data,$lessonId)
     {
-        return $this->lessonRepo->update($data, $courseId, $lessonId);
+        return $this->lessonRepo->update($data, $lessonId);
     }
 
     public function delete($courseId,$lessonId)

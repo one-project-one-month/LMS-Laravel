@@ -30,34 +30,7 @@ class AdminController extends Controller
 
     public function __construct(protected DashboardService $dashboardService) {}
 
-    public function login(Request $request)
-    {
-        try {
-            $credentials = $request->validate([
-                'email' => 'required|email',
-                'password' => 'required|min:6',
-            ]);
-
-            if (!$token = JWTAuth::attempt($credentials)) {
-                return response()->json([
-                    'message' => 'Invalid credentials',
-                ], 401);
-            }
-
-
-            return response()->json([
-                'message' => 'Login successfully as Admin ',
-                'data' => [
-                    'token' => $token
-                ]
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Login failed',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
+  
     public function create(Request $request)
     {
         //need to wrap DB:transistion()
@@ -140,9 +113,9 @@ class AdminController extends Controller
     {
         $instructors = $this->dashboardService->getAllInstructors($request);
 
-        if ($instructors->isEmpty()) {
-            return errorResponse("Instructors not found.");
-        }
+        // if ($instructors->isEmpty()) {
+        //     return errorResponse("Instructors not found.");
+        // }
 
         $instructors = $this->paginateFormat(InstructorResource::collection($instructors));
 
@@ -178,34 +151,34 @@ class AdminController extends Controller
     }
 
 
-    public function refreshToken()
-    {
-        $token = JWTAuth::getToken();
-        if (!$token) {
-            return response()->json([
-                'message' => 'Token not provided'
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+    // public function refreshToken()
+    // {
+    //     $token = JWTAuth::getToken();
+    //     if (!$token) {
+    //         return response()->json([
+    //             'message' => 'Token not provided'
+    //         ], Response::HTTP_UNAUTHORIZED);
+    //     }
 
-        $isExpired = JWTAuth::parseToken()->check();
+    //     $isExpired = JWTAuth::parseToken()->check();
 
-        if (!$isExpired) {
-            $newToken = JWTAuth::refresh($token);
-            JWTAuth::invalidate($token);
+    //     if (!$isExpired) {
+    //         $newToken = JWTAuth::refresh($token);
+    //         JWTAuth::invalidate($token);
 
-            return response()->json([
-                'message' => 'Token refreshed successfully.',
-                'data' => [
-                    'token' => $newToken
-                ]
-            ]);
-        }
+    //         return response()->json([
+    //             'message' => 'Token refreshed successfully.',
+    //             'data' => [
+    //                 'token' => $newToken
+    //             ]
+    //         ]);
+    //     }
 
-        return response()->json([
-            'message' => 'Token is still valid.',
-            'data' => [
-                'token' => (string) $token
-            ]
-        ]);
-    }
+    //     return response()->json([
+    //         'message' => 'Token is still valid.',
+    //         'data' => [
+    //             'token' => (string) $token
+    //         ]
+    //     ]);
+    // }
 }

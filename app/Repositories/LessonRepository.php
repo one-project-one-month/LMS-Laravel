@@ -17,12 +17,9 @@ class LessonRepository
     }
 
     // lesson detail
-    public function show(int $courseId, int $lessonId): Lesson
+    public function show( int $lessonId): Lesson
     {
-        $course = Course::find($courseId);
-        $lesson = Lesson::find($lessonId);
-
-        $this->validateLessonBelongsToCourse($course, $lesson);
+        $lesson = Lesson::findOrFail($lessonId);
 
         return $lesson;
     }
@@ -36,16 +33,14 @@ class LessonRepository
     }
 
     // update lesson
-    public function update(array $data, int $courseId, int $lessonId): Lesson
+    public function update(array $data, int $lessonId): Lesson
     {
-        $course = Course::findOrFail($courseId);
+    
         $lesson = Lesson::findOrFail($lessonId);
 
         // if (isset($data["video_url"]) && Storage::disk('public')->exists($lesson->video_url)) {
         //     Storage::disk('public')->delete($lesson->video_url);
         // }
-
-        $this->validateLessonBelongsToCourse($course, $lesson);
 
         $lesson->update($data);
         return $lesson->fresh();
@@ -57,19 +52,13 @@ class LessonRepository
         $course = Course::findOrFail($courseId);
         $lesson = Lesson::findOrFail($lessonId);
 
-        $this->validateLessonBelongsToCourse($course, $lesson);
-
         return $lesson->delete();
     }
 
     // toggle public
     public function togglePublish(int $courseId, int $lessonId): ?Lesson
     {
-        $course = Course::findOrFail($courseId);
         $lesson = Lesson::findOrFail($lessonId);
-
-        $this->validateLessonBelongsToCourse($course, $lesson);
-
         $lesson->update([
             "is_available" => !(bool) $lesson->is_available
         ]);
@@ -77,13 +66,5 @@ class LessonRepository
         return $lesson->fresh();
     }
 
-    // validate lesson belongs to course
-    protected function validateLessonBelongsToCourse(Course $course, Lesson $lesson)
-    {
-        if ($course->id != $lesson->course_id) {
-            abort(response()->json([
-                'error' => "Lesson not found in $course->course_name.",
-            ], 404));
-        }
-    }
+ 
 }

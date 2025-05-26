@@ -2,19 +2,19 @@
 
 namespace App\Services;
 
-use App\Http\Resources\CourseResource;
 use App\Jobs\RequestCreateCourse;
-use App\Models\Course;
 use App\Repositories\course\CourseRepositoryInterface;
 use App\Traits\ResponseTraits;
 use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
+use Symfony\Component\HttpFoundation\File\Exception\CannotWriteFileException;
 use Tymon\JWTAuth\Facades\JWTAuth;
+
+use function PHPUnit\Framework\throwException;
 
 class CourseService
 {
@@ -37,50 +37,56 @@ class CourseService
     }
     public function getById($id)
     {
+        $token = request()->bearerToken();
+
         $course = $this->courseRepository->show($id);
-        $user = JWTAuth::parseToken()->authenticate();
         $isEnrolled = false;
         $canAccessCourse = false;
-        if (is_("student")) {
+        if ($token) {
 
-            $student =  $user->student;
-            $isEnrolled = is_enrolled($student->id, $course->id);
+            $user = JWTAuth::parseToken()->authenticate();
+            if (is_("student")) {
+
+                $student =  $user->student;
+                $isEnrolled = is_enrolled($student->id, $course->id);
+            }
         }
+
+
 
         if ($isEnrolled or Gate::allows("course_details", $course)) {
             $canAccessCourse = true;
         } else {
-            // no account state
+            // no account saturation
             $canAccessCourse = false;
         }
-
         $result = $this->courseRepository->getCourseDetails($canAccessCourse, $id);
+
         return $result;
     }
-    public function create($data)
+    public function create($data, $file)
     {
-
-        $data = Arr::except($data, ["thumbnail"]);
-        $image = Arr::only($data, ['thumbnail']);
 
         $user = JWTAuth::parseToken()->authenticate();
         $id = $user->instructor->id;
 
-        // Get the uploaded file from thel 'thumbnail' key
-        $file = $image['thumbnail'];
+        // Get the uploaded file from the 'thumbnail' key
+        // dd($file);
         $path = $this->storeThumbnail($file, $data["course_name"]);
+        // $path = $file->store("thumbnails" , "public");
+
         if ($path) {
-            $data = array_merge($data, ["thumbnail" => $path], ["instructor_id" => $id]);
+            $data['thumbnail'] = $path;
+            $data = array_merge($data, ["instructor_id" => $id]);
             $course = $this->courseRepository->store($data);
             return $course;
         }
+        return throw new Exception("Failed to store image");
     }
-    public function updateThumbnail($image, $id)
+
+    public function updateThumbnail($image, $course)
     {
-
-
-
-        $course = $this->courseRepository->show($id);
+        
 
         $oldPath = str_replace("/", "\\", $course->thumbnail);
         if (File::exists(public_path("storage\\" . $oldPath))) {
@@ -89,25 +95,17 @@ class CourseService
 
         $path = $this->storeThumbnail($image, $course->course_name);
 
-        $course = $this->courseRepository->update($path, $id);
-        return $course;
+        $course = $this->courseRepository->updatethumbnailPath($path, $course->id);
+        return $course->thumbnail;
     }
 
     public function update($data, $id)
     {
-
-
-
         //! disable photo update
-        if (key_exists("thumbnail", $data)) {
-
-            $data = Arr::except($data, "thumbnail");
-        }
-
+        // if (key_exists("thumbnail", $data)) {
+        //     $data = Arr::except($data, "thumbnail");
+        // }
         $course = $this->courseRepository->update($data, $id);
-
-
-
         return $course;
     }
 
@@ -115,55 +113,54 @@ class CourseService
     public function publish($is_available, $id)
     {
         $data = ["is_available" => $is_available];
-        if ($is_available) {
-            $course =  $this->courseRepository->update($data,  $id);
-
-            return $course;
-        } else {
+        if (!$is_available) {
             throw new BadRequestException("Publish request must be true");
         }
+        $course =  $this->courseRepository->update($data,  $id);
+        return $course;
     }
     public function unpublish($is_available, $id)
     {
         $data = ["is_available" => $is_available];
-        if (!$is_available) {
-            $course =  $this->courseRepository->update($data,  $id);
-
-            return $course;
-        } else {
+        if ($is_available) {
             throw new BadRequestException("Unpublish request must be false");
         }
+        $course =  $this->courseRepository->update($data,  $id);
+        return $course;
     }
     public function destroy($id)
     {
         $this->courseRepository->destroy($id);
     }
 
-    public function requestAdmin($id)
+    public function request($id)
     {
         $course  = $this->courseRepository->show($id);
         RequestCreateCourse::dispatch($course);
     }
     public function complete($studentId, $courseId)
     {
-
-
-
-
-
         $course = $this->courseRepository->show($courseId);
         if (is_enrolled($studentId, $courseId)) {
-            if (Gate::allows("completeCourse", $course)) {
-                DB::table('enrollments')->where("user_id", $studentId)->where("course_id", $course->id)->update(["is_completed" => true]);
-                return true;
+            if (!Gate::allows("completeCourse", $course)) {
+
+                return false;
             }
+            $this->courseRepository->complete($studentId, $courseId);
+            return true;
         } else {
             return false;
         }
     }
-    public function  storeThumbnail($image, $course_name)
+    public function  storeThumbnail($file, $course_name)
     {
-        $path = $image->storeAs('thumbnails', time() . "$" . auth()->id()  .  Str::snake($course_name)  . "." . $image->getClientOriginalExtension(), 'public');
-        return $path;
+        try {
+
+            $path =  $file->storeAs('thumbnails', time() . "$" . auth()->id()  .  Str::snake($course_name)  . "." . $file->getClientOriginalExtension(), 'public');
+            return $path;
+        } catch (Exception $e) {
+
+            return $e;
+        }
     }
 }

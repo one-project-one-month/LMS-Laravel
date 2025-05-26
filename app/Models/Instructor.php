@@ -17,6 +17,7 @@ class Instructor extends Model
     {
         return $this->belongsTo(User::class);
     }
+  
 
     public function courses()
     {
@@ -25,8 +26,8 @@ class Instructor extends Model
 
     public function scopeFilter(Builder $query, array $filter)
     {
-        $query->when($filter['search'] ?? false, function(Builder $query, $value) {
-            $query->whereHas('user', function(Builder $query) use($value) {
+        $query->when($filter['search'] ?? false, function (Builder $query, $value) {
+            $query->whereHas('user', function (Builder $query) use ($value) {
                 $query
                     ->where('username', 'like', '%' . $value . '%')
                     ->orWhere('email', 'like', '%' . $value . '%')
@@ -35,13 +36,13 @@ class Instructor extends Model
             })->orWhere('nrc', 'like', '%' . $value . '%');
         });
 
-        $query->when($filter['edu'] ?? false, function(Builder $query, $value) {
+        $query->when($filter['edu'] ?? false, function (Builder $query, $value) {
             $query->where('edu_background', 'like', '%' . $value . '%');
         });
 
-        $query->when(isset($filter['is_available']), function(Builder $query) use($filter) {
-            $query->whereHas('user', function(Builder $query) use($filter) {
-                $query->whereHas('user', function(Builder $query) use($filter) {
+        $query->when(isset($filter['is_available']), function (Builder $query) use ($filter) {
+            $query->whereHas('user', function (Builder $query) use ($filter) {
+                $query->whereHas('user', function (Builder $query) use ($filter) {
                     $query->where('is_available', $filter['is_available']);
                 });
             });

@@ -19,22 +19,21 @@ class CourseResource extends JsonResource
         return [
 
             "id" => $this->id,
-            "courseName" => $this->course_name,
+            "course_name" => $this->course_name,
             "thumbnail" => url("/storage/" .  $this->thumbnail),
             "type" => $this->type,
             "level" => $this->level ?? "beginner",
             "description" => $this->description ?? "",
             "duration" => $this->duration,
-            "originalPrice" => $this->original_price,
-            "currentPrice" => $this->current_price ?? $this->original_price,
-            "category" => CategoryResource::make($this->whenLoaded("category")),
-            "instructorName" => $this->instructorUser->username,
-            "instructorProfile" => $this->instructorUser->profile_photo,
-            "instructorEducation" => $this->instructorUser->edu_background,
-            "createdAt" => $this->created_at,
-            "updatedAt" => $this->updated_at,
-
+            "original_price" => $this->original_price,
+            "current_price" => $this->current_price ?? $this->original_price,
+            "category" => CategoryResource::make($this->category),
+            "instructor_user" => InstructorUserResource::make($this->instructorUser),
+            "created_at" => $this->created_at,
+            "updated_at" => $this->updated_at,
+            "students" =>  $this->students,
             "lessons" =>  LessonResource::collection($this->whenLoaded("lessons")),
+            "is_available" => $this->is_available,
 
             "socialLinks" => SocialLinkResource::make($this->whenLoaded("social_link"))
         ];

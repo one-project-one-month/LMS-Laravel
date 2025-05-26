@@ -9,9 +9,13 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\UnauthorizedException;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -44,6 +48,19 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 403);
         });
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
+            $routeName = Route::currentRouteName();
+            if($routeName == "instructor.show"){
+                return response()->json([
+                    "message" => "Instructor is Not found",
+                    "error" => $e->getMessage()
+                ], Response::HTTP_NOT_FOUND);
+            }
+            if($routeName == "lesson.show"){
+                return response()->json([
+                    "message" => "Lesson is Not found",
+                    "error" => $e->getMessage()
+                ], Response::HTTP_NOT_FOUND);
+            }
             if ($request->is("api/courses/*")) {
                 return response()->json([
                     "message" => "Course is Not found",
@@ -62,17 +79,25 @@ return Application::configure(basePath: dirname(__DIR__))
                     "error" => $e->getMessage()
                 ], 404);
             }
-            if ($request->is("api/lessons/*")) {
-                return response()->json([
-                    "message" => "Lesson is Not found",
-                    "error" => $e->getMessage()
-                ], 404);
-            }
+
+   
 
             // return response()->json([
             //     "message" => "Resource not found",
             //     "error" => $e->getMessage()
             // ], 404);
+        });
+        $exceptions->render(function(TokenExpiredException $e){
+            return response()->json([
+                "message" => "TokenExpired",
+                "error" => $e->getMessage()
+            ], 401);
+        });  
+         $exceptions->render(function(UnauthorizedHttpException $e){
+            return response()->json([
+                "message" => "TokenExpired",
+                "error" => $e->getMessage()
+            ], 401);
         });
 
 

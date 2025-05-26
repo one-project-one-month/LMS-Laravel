@@ -6,9 +6,12 @@ use App\Models\User;
 
 class UpdateProfilePhotoRepository implements UpdateProfilePhotoRepositoryInterface
 {
-    public function updateProfilePhoto(User $user, ?string $path): bool
+
+    public function updateProfilePhoto($user,  $path,  $arr)
     {
+        $user->update($arr);
         $user->profile_photo = $path;
-        return $user->save();
+        $user->save();
+        return $user;
     }
 }

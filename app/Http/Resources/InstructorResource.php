@@ -20,7 +20,7 @@ class InstructorResource extends JsonResource
                 'phone'          => $this->user->phone,
                 'dob'            => $this->user->dob,
                 'address'        => $this->user->address,
-                'profile_photo'  => $this->user->profile_photo,
+                'profile_photo'  => url("/storage/" . $this->user->profile_photo),
                 'is_available'   => $this->user->is_available,
             ],
             'nrc'            => $this->nrc,

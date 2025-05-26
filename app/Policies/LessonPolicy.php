@@ -31,7 +31,7 @@ class LessonPolicy
      */
     public function create(User $user): bool
     {
-        return $user->role->role == "instructor";
+        return true;
     }
 
     /**

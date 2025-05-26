@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\GeneralUserResource;
 use App\Models\User;
 use App\Repositories\UpdateProfilePhotoRepositoryInterface;
 use App\Traits\ResponseTraits;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 
 class UpdateProfilePhotoController extends Controller
@@ -22,7 +24,10 @@ class UpdateProfilePhotoController extends Controller
 
     public function __invoke(Request $request, User $user)
     {
+        $path = $user->profile_photo;
         if ($request->hasFile('profile_photo')) {
+
+
             if ($user->profile_photo) {
                 Storage::disk('public')->delete($user->profile_photo);
             }
@@ -34,26 +39,21 @@ class UpdateProfilePhotoController extends Controller
             $filename = "profile_photo_{$emailPart}_{$user->id}_{$uniqueNumber}." . $extension;
 
             $path = $file->storeAs('profile_photos', $filename, 'public');
-
-            $this->updateProfilePhotoRepository->updateProfilePhoto($user, $path);
-
-            return $this->successResponse(
-                'Profile photo updated successfully',
-                ['profile_photo' => $path],
-                200
-            );
         }
 
-        if ($user->profile_photo) {
-            Storage::disk('public')->delete($user->profile_photo);
-        }
+        $data = $request->all();
+        $arr = Arr::except($data, "profile_photo");
+        $result =    $this->updateProfilePhotoRepository->updateProfilePhoto($user, $path, $arr);
 
-        $this->updateProfilePhotoRepository->updateProfilePhoto($user, null);
+        // return $this->successResponse(
+        //     'Profile photo updated successfully',
+        //     ['profile_photo' => $path],
+        //     200
+        // );
 
-        return $this->successResponse(
-            'Profile photo deleted successfully',
-            ['profile_photo' => null],
-            200
-        );
-    }
+
+
+        //  $this->updateProfilePhotoRepository->updateProfilePhoto($user, null);
+
+        return GeneralUserResource::make($result)->additional(["message" => "User update successfully"]);    }
 }

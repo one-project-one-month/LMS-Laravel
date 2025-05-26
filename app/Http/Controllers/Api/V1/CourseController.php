@@ -4,184 +4,155 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CourseRequest;
+use App\Http\Requests\ImageRequest;
 use App\Http\Resources\CourseCollection;
 use App\Http\Resources\CourseResource;
 use App\Jobs\RequestCreateCourse;
-use App\Mail\CourseCreated;
 use App\Models\Course;
-use App\Repositories\course\CourseRepositoryInterface;
 use App\Services\CourseService;
+use App\Traits\customPaginationFormat;
 use App\Traits\ResponseTraits;
 use Exception;
-use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Str;
-
+use Illuminate\Support\Facades\Mail;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
+use Symfony\Component\HttpFoundation\Response;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class CourseController extends Controller
 {
-    use ResponseTraits;
+    use ResponseTraits, customPaginationFormat;
 
     public function __construct(protected CourseService $courseService) {}
-
-
-
-
 
     /**
      *  Get all courses
      *  get - /api/courses
      */
-    //* done 
+    //* get all course not include course details 
     public function index(Request $request)
     {
         $result = $this->courseService->getAll($request);
 
-        return  new CourseCollection($result);
+        return $this->successResponse(message: "Course fetched successfully", data: $this->paginateFormat($result));
+    }
+    public function myCourse(Request $request)
+    {
+
+        $user = auth()->user();
+        $courses = $user->student->courses()->filter($request)->with("instructorUser", "category")->get();
+        // $courses = $user->student->courses()
+
+        // foreach ($courses as $course) {
+        //  $user =  $course->instructorUser;
+        // $data = [ ...$data , "instructor" => $user ] ;
+        // }
+        $formatCourses = CourseResource::collection($courses);
+        return $this->successResponse(message: "My course fetched successfully", data: $formatCourses);
     }
 
     /**
-     *  store courese
+     *  store course
      *  post - /api/courses
      *  @param - instructor_id, course_name, thumbnail, type, level, description, duration, original_price, current_price, category_id
      */
 
-    //* done
-    public function store(CourseRequest $courseRequest)
+    //*  create course auto draft not publish
+    public function store(CourseRequest $courseRequest): JsonResponse
     {
         $data = $courseRequest->validated();
-        $course = $this->courseService->create($data);
-        return CourseResource::make($course)->additional(["message" => "Course Created Successfully"])->response()->setStatusCode(201);
+        $file = $courseRequest->file("thumbnail");
 
-        //    catch (Exception $e) {
-        //         return $this->errorResponse(message: "Creating Course Failed!", error: $e->getMessage());
-        //     }
+        $course = $this->courseService->create($data, $file);
+        return CourseResource::make($course)->additional(["message" => "Course Created Successfully"])->response()->setStatusCode(201);
     }
 
-    /**
-     *  store courese
-     *  put - /api/courses/:id
-     *  @param id
-     *  @param request
-     */
-    //*done
-    public function update(CourseRequest $courseRequest, $courseId)
+    //* update course by instructor with id 
+    //! not update publish and draft
+    public function update(CourseRequest $courseRequest, Course $course)
     {
-        $course =  $this->courseService->update($courseRequest->validated(), $courseId);
+        $data = $courseRequest->validated();
+        $data = Arr::except($data , "thumbnail");
+        $file = $courseRequest->file("thumbnail");
+        if($file){
+         $this->courseService->updateThumbnail($file , $course);
+
+        }
+        // return response()->json(["message"=>"test", "data"=>$data]);
+        $course =  $this->courseService->update( $data , $course->id);
 
 
         return CourseResource::make($course)->additional(["message" => "Course update successfully"]);
-        // } catch (Exception $e) {
-        //     return response()->json([
-        //         "message" => "something was wrong",
-        //         "error" => $e->getMessage()
-        //     ]);
-        // }
     }
-    //*done
-    public function updateThumbnail(Request $request, $courseId)
+    //* update thumbnail with id , payload must be file type
+    public function updateThumbnail(ImageRequest $request, $courseId): JsonResponse
+    {
+
+        $attr = $request->validated();
+        $image = $attr["thumbnail"];
+        $path =  $this->courseService->updateThumbnail($image, $courseId);
+        return $this->successResponse("Course thumbnail updated successfully.", url("/storage/" .  $path));
+    }
+
+    //* publish course by admin with id
+    public function publish(Request $request,Course $course): JsonResponse
     {
 
         $attr = $request->validate([
-            'thumbnail' => [
-                "required",
-                'file',
-                'mimes:jpg,jpeg,png',
-                'max:2048',
-            ],
+            "is_available" => "boolean"
+        ]);
+        if (!$attr["is_available"]) {
+            return $this->errorResponse(message: "Publish course Failed", status: Response::HTTP_BAD_REQUEST);
+        }
+        $course =   $this->courseService->unpublish($attr["is_available"], $course->id);
+        return $this->successResponse("Course  publish successfully.");
+    }
+    //* unpublish course by instructor and admin with id
+    public function unpublish(Request $request,Course $course): JsonResponse
+    {
+
+        $attr = $request->validate([
+            "is_available" => "boolean"
         ]);
 
-        $image = $attr["thumbnail"];
-        $course = $this->courseService->updateThumbnail($image, $courseId);
-        return $this->successResponse("Course thumbnail updated successfully.");
+        $this->courseService->unpublish($attr["is_available"], $course->id);
+        return $this->successResponse("Course  unpublish successfully.");
     }
-    //*done
 
-    public function publish(Request $request, $courseId)
+    //* delete course by instructor with id
+    public function destroy(Course $course): JsonResponse
     {
-        try {
-            $attr = $request->validate([
-                "is_available" => "boolean"
-            ]);
-            $course =   $this->courseService->publish($attr["is_available"], $courseId);
-
-
-
-
-            return $this->successResponse("Course  publish successfully.");
-        } catch (\Exception $e) {
-            return $this->errorResponse(
-                "failed to publish course",
-                "error",
-                $e->getMessage(),
-                400
-            );
-        }
-    }
-    //*done
-    public function unpublish(Request $request, $courseId)
-    {
-        try {
-            $attr = $request->validate([
-                "is_available" => "boolean"
-            ]);
-            $course =   $this->courseService->publish($attr["is_available"], $courseId);
-
-
-
-
-            return $this->successResponse("Course  unpublish successfully.");
-        } catch (\Exception $e) {
-            return $this->errorResponse(
-                "failed to unpublish course",
-                "error",
-                $e->getMessage(),
-                400
-            );
-        }
-    }
-    /**
-     *  delete course
-     *  delete - /api/courses/:id
-     * @param id
-     * @param request
-     */
-    //*done
-    public function destroy($courseId)
-    {
-
-
-        $this->courseService->destroy($courseId);
-        return $this->successResponse("delete successfully", status: 204);
+        $this->courseService->destroy($course->id);
+        return $this->successResponse("delete successfully");
     }
 
-    //*done
+    //* get course details base on enrolled or not , instructor ,admin all access
     public function show($courseId)
     {
         $course = $this->courseService->getById($courseId);
         return CourseResource::make($course)->additional(["message" => "course retrieve successfully🎉"]);
     }
-    //*done
-    public function requestAdmin($id)
+    public function normal(Course $course)
     {
+        return CourseResource::make($course)->additional(["message" => "course retrieve successfully🎉"]);
+    }
+    //* publish request to admin 
+    public function request(
+        Course $course
+    ) {
 
+        $this->courseService->request($course->id);
         return $this->successResponse("Successfully request to publish your course");
     }
+
     //set student for complement 
-    //* all done
-    public function complete(Request $request,  $courseId)
+    //
+    public function complete(Request $request,  $courseId): JsonResponse
     {
-
-
-
-
         $attributes = $request->validate([
             "user_id" => "required|exists:students,id",
         ]);

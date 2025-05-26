@@ -7,7 +7,7 @@ trait customPaginationFormat
     public function paginateFormat($data)
     {
         return [
-            'datas' => $data->items(),
+            'data' => $data->items(),
             'current_page' => $data->currentPage(),
             'last_page' => $data->lastPage(),
             'next_page_url' => $data->nextPageUrl(),

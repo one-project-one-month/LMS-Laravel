@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Auth\AdminController;
-use App\Http\Controllers\Api\V1\Auth\InstructorAuthController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CourseController;
@@ -11,24 +10,24 @@ use App\Http\Controllers\Api\V1\InstructorController;
 use App\Http\Controllers\Api\V1\LessonController;
 use App\Http\Controllers\Api\V1\StudentController;
 use App\Http\Controllers\Api\V1\UpdateProfilePhotoController;
-use App\Http\Controllers\Api\V1\UserController;
-use App\Jobs\RequestCreateCourse;
-use App\Mail\CourseCreated;
-use App\Models\Course;
-use App\Models\Instructor;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Validation\Rules\Can;
-use Tymon\JWTAuth\Facades\JWTAuth;
+
+Route::post('test', function (Request $request) {
+
+    $cookie = $request->cookie("refreshToken");
+    return response()->json(['message' => 'Hello scantun', "cookie" => $cookie, "user" => auth()->user()]);
+})->middleware("jwt.auth");
 
 
 Route::prefix('v1')->group(function () {
-    // authentication
+    
     Route::post("/auth/register", [AuthController::class, "register"]);
+    Route::post("/auth/refresh", [AuthController::class, "refreshToken"]);
     Route::post("/auth/login", [AuthController::class, "login"]);
-    Route::delete("/auth/logout", [AuthController::class, "destroy"])->middleware('jwt.auth');
+    Route::post("/auth/logout", [AuthController::class, "logout"])->middleware('jwt.auth');
+    Route::get("/auth/me", [AuthController::class, "profile"])->middleware("jwt.auth");
+
 
     // User Profile Photo Update
     Route::post('/users/{user}/profile-photo', UpdateProfilePhotoController::class)->middleware('jwt.auth');
@@ -43,7 +42,7 @@ Route::prefix('v1')->group(function () {
 
     // instructor
     Route::get('/instructors', [InstructorController::class, 'index']);
-    Route::get('/instructors/{instructor}', [InstructorController::class, 'show'])->middleware(['jwt.auth']);
+    Route::get('/instructors/{instructor}', [InstructorController::class, 'show'])->name("instructor.show");
     Route::post('/instructors', [InstructorController::class, 'store'])->middleware(['jwt.auth']);
     Route::put('/instructors/{instructor}', [InstructorController::class, 'update'])->middleware(['jwt.auth']);
     Route::delete('/instructors/{instructor}', [InstructorController::class, 'destroy'])->middleware(['jwt.auth']);
@@ -57,22 +56,24 @@ Route::prefix('v1')->group(function () {
     Route::put('/categories/{id}', [CategoryController::class, 'update'])->middleware('jwt.auth');
     Route::patch('/categories/{id}', [CategoryController::class, 'update'])->middleware('jwt.auth');
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy'])->middleware('jwt.auth');
-
+// Route::get("/helo" , fn() => null);
 
     // courses api
+    //need to develop course when fetch by instructor they need to be show include isAvailable is false
+    Route::get("/courses/my-courses", [CourseController::class, "myCourse"])->middleware("jwt.auth");
     Route::get("/courses", [CourseController::class, "index"]);
     Route::post("/courses", [CourseController::class, "store"])->middleware(["jwt.auth"]);
     Route::get("/courses/{course}", [CourseController::class, "show"]);
-    Route::put("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
+    Route::get("/courses/{course}/normal", [CourseController::class, "normal"]);
+    Route::post("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
     Route::patch("/courses/{course}", [CourseController::class, "update"])->middleware(["jwt.auth", "can:update,course"]);
-    Route::delete("/courses/{id}", [CourseController::class, "destroy"])->middleware(["jwt.auth", "can:delete,course"]);
-
-    Route::patch("/courses/unpublish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "can:update,course"]);
+    Route::delete("/courses/{course}", [CourseController::class, "destroy"])->middleware(["jwt.auth", "can:delete,course"]);
+    Route::patch("/courses/unpublish/{course}", [CourseController::class, "unpublish"])->middleware(["jwt.auth", "can:update,course"]);
     Route::patch("/courses/publish/{course}", [CourseController::class, "publish"])->middleware(["jwt.auth", "admin"]);
-    Route::post("/courses/{course}/thumbnail", [CourseController::class, "updateThumbnail"])->middleware(["jwt.auth"]);
-    Route::patch("/courses/{course}/complete", [CourseController::class, "complete"])->middleware(["jwt.auth"]);
-    Route::get("/courses/{course}/request", [CourseController::class, "request"])->middleware("jwt.auth", "can:update,course");
-
+    Route::post("/courses/{course}/thumbnail", [CourseController::class, "updateThumbnail"])->middleware(["jwt.auth", "can:update,course"]);
+    Route::patch("/courses/{course}/complete", [CourseController::class, "complete"])->middleware(["jwt.auth", "can:update,course"]);
+    Route::post("/courses/{course}/request", [CourseController::class, "request"])->middleware("jwt.auth", "can:update,course");
+    //make route for courses that is enrolled
 
     // social-link api
     Route::get('courses/{course}/social-link', [SocialLinkController::class, 'show'])->middleware('jwt.auth');
@@ -86,16 +87,16 @@ Route::prefix('v1')->group(function () {
 
     // lesson api
     Route::get('/courses/{id}/lessons', [LessonController::class, 'index']);
-    Route::post('/courses/{id}/lessons', [LessonController::class, 'store'])->middleware('jwt.auth', 'can:create,lesson');
-    Route::get('/courses/{course}/lessons/{lesson}', [LessonController::class, 'show'])->middleware('jwt.auth', 'can:view,lesson');
-    Route::put('/courses/{course}/lessons/{lesson}', [LessonController::class, 'update'])->middleware('jwt.auth', 'can:update,lesson');
+    Route::get('/lessons', [LessonController::class, 'all'])->middleware('jwt.auth');
+    Route::post('/courses/{course}/lessons', [LessonController::class, 'store'])->middleware('jwt.auth', "instructor");
+    Route::get('/lessons/{lesson}', [LessonController::class, 'show'])->middleware('jwt.auth', 'can:view,lesson')->name("lesson.show");
+    Route::put('/lessons/{lesson}', [LessonController::class, 'update'])->middleware('jwt.auth', 'can:update,lesson');
     Route::delete('/courses/{course}/lessons/{lesson}', [LessonController::class, 'destroy'])->middleware('jwt.auth', 'can:delete,lesson');
     Route::patch('/courses/{course}/lessons/{lesson}/togglePublish', [LessonController::class, 'publish'])->middleware('jwt.auth', 'can:update,lesson');
 
 
     // admin
-    Route::post("/admins/login", [AdminController::class, 'login']);
-    Route::post("/admins/refresh-token", [AdminController::class, 'refreshToken']);
+    //login and refresh token is combine to auth controller
 
     // dashboard
     Route::post("/admins/create", [AdminController::class, 'create'])->middleware('jwt.auth', 'admin');

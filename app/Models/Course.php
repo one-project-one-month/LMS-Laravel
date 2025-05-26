@@ -54,7 +54,11 @@ class Course extends Model
 
     public function scopeFilter($query, $filter)
     {
-
+        $query->when($filter['category'] ?? false, function ($query, $value) {
+            $query->whereHas('category', function ($query) use ($value) {
+                $query->where("id", $value)->orWhere('name', 'like', '%' . $value . '%');
+            });
+        });
         $query->when($filter['search'] ?? false, function ($query, $value) {
             $query->where(function ($query) use ($value) {
 
@@ -70,11 +74,7 @@ class Course extends Model
             $query->where('level', $value);
         });
 
-        $query->when($filter['category'] ?? false, function ($query, $value) {
-            $query->whereHas('category', function ($query) use ($value) {
-                $query->where('name', 'like', '%' . $value . '%');
-            });
-        });
+
         $query->when($filter['instructor'] ?? false, function ($query, $value) {
             $query->whereHas('instructor.user', function ($query) use ($value) {
                 $query->where('username', 'like', "%{$value}%");
@@ -84,5 +84,6 @@ class Course extends Model
 
             $query->whereBetween('price', [$value - 50, $value + 50]);
         });
+        $query->where("is_available" , true);
     }
 }
